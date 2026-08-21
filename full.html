@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>启源SaaS工厂端 · 全功能交互原型</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<style>
+:root{--p:#409eff;--pd:#337ecc;--bd:#dcdfe6;--bdl:#e4e7ed;--t1:#303133;--t2:#606266;--t3:#909399;--ns:#ff7d1c;--nsbg:#fff5ec;--nsbd:#ffd9b8;--sb:#10243e;--sba:#1d3a5f;}
+*{font-family:"PingFang SC","Microsoft YaHei","Helvetica Neue",Arial,sans-serif;box-sizing:border-box;}
+body{background:#eef1f5;margin:0;}
+.ep-btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--bd);background:#fff;color:var(--t2);border-radius:4px;padding:7px 14px;font-size:13px;cursor:pointer;transition:all .18s;line-height:1;white-space:nowrap;}
+.ep-btn:hover{color:var(--p);border-color:#c6e2ff;background:#ecf5ff;}
+.ep-btn.primary{background:var(--p);border-color:var(--p);color:#fff;}
+.ep-btn.primary:hover{background:#66b1ff;border-color:#66b1ff;}
+.ep-btn.ns{background:var(--ns);border-color:var(--ns);color:#fff;}
+.ep-btn.ns:hover{background:#ff9847;border-color:#ff9847;}
+.ep-btn.plain{color:var(--p);border-color:#c6e2ff;background:#ecf5ff;}
+.ep-btn.sm{padding:4px 10px;font-size:12px;}
+.ep-input{width:100%;border:1px solid var(--bd);border-radius:4px;padding:7px 11px;font-size:13px;color:var(--t1);outline:none;transition:border-color .18s;background:#fff;}
+.ep-input:focus{border-color:var(--p);box-shadow:0 0 0 2px rgba(64,158,255,.12);}
+.ep-input::placeholder{color:#a8abb2;}
+.ep-input.ferr{border-color:#f56c6c !important;}
+select.ep-input{appearance:auto;}
+.kb{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;border:1px solid #c9cdd4;border-bottom-width:2px;border-radius:4px;background:#f7f8fa;color:#4e5969;font-size:11px;font-weight:600;}
+.chip{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--bd);background:#fff;color:var(--t2);border-radius:4px;padding:5px 10px;font-size:12px;cursor:pointer;transition:all .15s;user-select:none;}
+.chip:hover{border-color:#c6e2ff;color:var(--p);}
+.chip.on{background:#ecf5ff;border-color:var(--p);color:var(--p);font-weight:600;}
+.tag{display:inline-flex;align-items:center;border-radius:3px;padding:1px 7px;font-size:11px;line-height:18px;white-space:nowrap;}
+.tag.ns{background:var(--nsbg);color:var(--ns);border:1px solid var(--nsbd);}
+.tag.std{background:#ecf5ff;color:var(--p);border:1px solid #c6e2ff;}
+.tag.ok{background:#f0f9eb;color:#67c23a;border:1px solid #c2e7b0;}
+.tag.warn{background:#fdf6ec;color:#e6a23c;border:1px solid #f5dab1;}
+.tag.gray{background:#f4f4f5;color:#909399;border:1px solid #d3d4d6;}
+.menu-item{display:flex;align-items:center;gap:9px;padding:0 18px;height:44px;color:#bfd3ea;font-size:13.5px;cursor:pointer;transition:background .15s;user-select:none;}
+.menu-item:hover{background:rgba(255,255,255,.06);}
+.submenu-item{display:flex;align-items:center;gap:8px;padding:0 18px 0 44px;height:38px;color:#93a8c2;font-size:12.5px;cursor:pointer;transition:all .15s;position:relative;user-select:none;}
+.submenu-item:hover{color:#fff;}
+.submenu-item.active{color:#fff;background:var(--sba);}
+.submenu-item.active::before{content:"";position:absolute;left:30px;width:5px;height:5px;border-radius:50%;background:var(--ns);}
+.twrap{overflow:auto;border:1px solid var(--bdl);border-radius:6px;background:#fff;}
+.ep-table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:760px;}
+.ep-table th{background:#f5f7fa;color:var(--t3);font-weight:600;padding:9px 10px;border-bottom:1px solid var(--bdl);text-align:left;white-space:nowrap;}
+.ep-table td{padding:9px 10px;border-bottom:1px solid #f0f2f5;color:var(--t2);vertical-align:middle;}
+.ep-table tbody tr:hover td{background:#f8fafc;}
+.ep-table .exp td{background:#fafbfc;padding:0;}
+.link-btn{color:var(--p);cursor:pointer;font-size:12.5px;margin-right:12px;}
+.link-btn:hover{text-decoration:underline;}
+.link-btn.danger{color:#f56c6c;}
+.dlg-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:flex;align-items:flex-start;justify-content:center;padding:9vh 16px 16px;opacity:0;transition:opacity .18s;overflow:auto;}
+.dlg-overlay.show{opacity:1;}
+.dlg{background:#fff;border-radius:8px;width:520px;max-width:100%;box-shadow:0 12px 40px rgba(0,0,0,.18);transform:translateY(-14px);transition:transform .18s;display:flex;flex-direction:column;max-height:82vh;}
+.dlg-overlay.show .dlg{transform:none;}
+.dlg-head{padding:14px 18px;font-size:14.5px;font-weight:600;color:var(--t1);display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #f0f2f5;flex:none;}
+.dlg-head i{cursor:pointer;color:var(--t3);padding:4px;}
+.dlg-body{padding:18px;overflow:auto;}
+.dlg-foot{padding:12px 18px;border-top:1px solid #f0f2f5;display:flex;justify-content:flex-end;gap:8px;flex:none;}
+.frow{display:flex;margin-bottom:14px;align-items:flex-start;}
+.flab{width:88px;flex:none;text-align:right;padding-right:12px;font-size:13px;color:var(--t2);line-height:34px;}
+.flab.req::before{content:"*";color:#f56c6c;margin-right:3px;}
+.fval{flex:1;min-width:0;}
+.hint{font-size:11px;color:#b1b3b8;margin-top:4px;}
+.tabbar{display:flex;border-bottom:1px solid var(--bdl);margin-bottom:12px;gap:2px;}
+.tab{padding:8px 16px;font-size:13px;color:var(--t2);cursor:pointer;border-bottom:2px solid transparent;user-select:none;}
+.tab.on{color:var(--p);border-color:var(--p);font-weight:600;}
+.card{background:#fff;border:1px solid var(--bdl);border-radius:6px;padding:14px;}
+.pager{display:flex;align-items:center;justify-content:flex-end;gap:6px;padding:10px 4px 2px;font-size:12px;color:var(--t3);}
+.pg{min-width:26px;height:26px;padding:0 6px;border:1px solid var(--bd);border-radius:4px;display:inline-flex;align-items:center;justify-content:center;background:#fff;cursor:pointer;}
+.pg.on{color:var(--p);border-color:var(--p);background:#ecf5ff;}
+.toast{position:fixed;top:64px;left:50%;transform:translateX(-50%) translateY(-16px);background:#fff;border-radius:6px;box-shadow:0 6px 24px rgba(0,0,0,.14);padding:11px 18px;font-size:13.5px;display:flex;gap:9px;align-items:center;opacity:0;transition:all .28s;z-index:400;border:1px solid var(--bdl);max-width:86vw;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.switch{width:36px;height:19px;border-radius:10px;background:var(--p);position:relative;cursor:pointer;transition:background .2s;flex:none;display:inline-block;}
+.switch::after{content:"";position:absolute;top:2px;left:19px;width:15px;height:15px;border-radius:50%;background:#fff;transition:left .2s;}
+.switch.off{background:#c0c4cc;}.switch.off::after{left:2px;}
+.tpl-card{border:1px dashed #ffc590;background:var(--nsbg);border-radius:8px;padding:10px 12px;cursor:pointer;transition:all .16s;}
+.tpl-card:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(255,125,28,.18);border-color:var(--ns);}
+.tpl-card.flash{animation:tplflash .9s ease;}
+@keyframes tplflash{0%{box-shadow:0 0 0 0 rgba(255,125,28,.5);}100%{box-shadow:0 0 0 14px rgba(255,125,28,0);}}
+.hotkey-flash{animation:hkf 1s ease;}
+@keyframes hkf{0%,100%{box-shadow:none;}30%{box-shadow:0 0 0 4px rgba(255,125,28,.35);}}
+.order-row{animation:rowin .3s ease;}
+@keyframes rowin{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:none;}}
+.step-dot{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--t2);}
+.step-dot .d{width:20px;height:20px;border-radius:50%;background:#ecf5ff;color:var(--p);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex:none;}
+.parse-chip{display:inline-flex;align-items:center;gap:4px;background:#f0f9eb;border:1px solid #c2e7b0;color:#4c7a2c;border-radius:3px;font-size:11px;padding:1px 7px;}
+.stat-card{background:#fff;border:1px solid var(--bdl);border-radius:6px;padding:14px 16px;display:flex;flex-direction:column;gap:4px;}
+.stat-card .v{font-size:22px;font-weight:700;color:var(--t1);}
+.stat-card .l{font-size:12px;color:var(--t3);}
+.bar{height:8px;border-radius:4px;background:#ecf5ff;overflow:hidden;min-width:90px;}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#409eff,#79bbff);border-radius:4px;}
+::-webkit-scrollbar{width:8px;height:8px;}::-webkit-scrollbar-thumb{background:#c9cdd4;border-radius:4px;}
+@media (max-width:900px){ #sidebar{width:100% !important;max-height:180px;overflow:auto;} }
+</style>
+</head>
+<body>
+<!-- 顶栏 -->
+<div class="h-[52px] flex items-center justify-between px-4 bg-white border-b border-slate-200 sticky top-0 z-[100]">
+  <div class="flex items-center gap-2.5">
+    <div class="w-8 h-8 rounded-md bg-gradient-to-br from-[#409eff] to-[#1d6fd8] flex items-center justify-center text-white text-sm font-bold">启</div>
+    <div>
+      <div class="text-[14px] font-semibold text-[#303133] leading-tight">启源SaaS管理平台 <span class="text-[11px] font-normal text-[#909399]">· 工厂端 · 全功能原型</span></div>
+      <div class="text-[10.5px] text-[#b1b3b8] leading-tight">租户 815160 · 演示数据，不影响真实系统</div>
+    </div>
+  </div>
+  <div class="flex items-center gap-4 text-[12.5px] text-[#606266]">
+    <span class="hidden sm:flex items-center gap-3 text-[#909399]"><i class="fa-solid fa-magnifying-glass"></i><i class="fa-regular fa-bell"></i><i class="fa-solid fa-expand"></i></span>
+    <span class="flex items-center gap-2"><span class="w-7 h-7 rounded-full bg-[#ecf5ff] text-[#409eff] flex items-center justify-center text-[12px] font-semibold">yt</span>ytadmin <i class="fa-solid fa-angle-down text-[10px] text-[#c0c4cc]"></i></span>
+  </div>
+</div>
+
+<div class="flex" style="min-height:calc(100vh - 52px);">
+  <!-- 侧边栏 -->
+  <aside id="sidebar" class="w-[200px] flex-none text-white py-2" style="background:var(--sb);"></aside>
+  <!-- 主区 -->
+  <div class="flex-1 min-w-0 flex flex-col">
+    <div class="h-[42px] flex items-center px-4 bg-white border-b border-slate-200 text-[12.5px] text-[#909399]">
+      <i class="fa-solid fa-location-dot mr-1.5 text-[11px]"></i><span id="crumb">首页</span>
+      <span class="ml-auto text-[11px] text-[#c0c4cc] hidden md:inline">按 <span class="kb">F2</span> 可随时唤起非标快捷下单</span>
+    </div>
+    <main id="main" class="flex-1 p-3.5 bg-[#f0f2f5]"></main>
+  </div>
+</div>
+
+<div class="toast" id="toast"><i class="fa-solid fa-circle-check text-[16px] text-[#67c23a]" id="toastIc"></i><span id="toastTxt"></span></div>
+
+<script>
+/* ========================= 演示数据（按真实系统结构脱敏） ========================= */
+const DB={
+customers:[
+ {customerId:1001,customerCode:"C2024001",customerName:"鲁西化工",contactPerson:"张建国",phone:"13806350001",address:"山东省聊城市开发区化工园区",accountStatus:"正常",createTime:"2025-09-12 10:22"},
+ {customerId:1002,customerCode:"C2024002",customerName:"外贸diamond",contactPerson:"李娜",phone:"13705320002",address:"浙江省义乌市国际商贸城",accountStatus:"正常",createTime:"2025-10-03 14:05"},
+ {customerId:1003,customerCode:"C2024003",customerName:"外贸NATIONAL",contactPerson:"王强",phone:"15805320003",address:"山东省青岛市保税港区",accountStatus:"正常",createTime:"2025-10-21 09:41"},
+ {customerId:1004,customerCode:"C2024004",customerName:"东方锅炉",contactPerson:"陈明",phone:"13908130004",address:"四川省自贡市高新区",accountStatus:"正常",createTime:"2025-11-08 16:30"},
+ {customerId:1005,customerCode:"C2024005",customerName:"青海丽豪",contactPerson:"刘洋",phone:"18609710005",address:"青海省西宁市东川工业园",accountStatus:"正常",createTime:"2025-12-02 11:18"},
+ {customerId:1006,customerCode:"C2024006",customerName:"南玻节能",contactPerson:"赵敏",phone:"13507550006",address:"广东省深圳市宝龙科技城",accountStatus:"正常",createTime:"2026-01-15 08:52"},
+ {customerId:1007,customerCode:"C2024007",customerName:"双良硅材料",contactPerson:"孙磊",phone:"15805100007",address:"江苏省江阴市利港镇",accountStatus:"正常",createTime:"2026-02-20 15:44"},
+ {customerId:1008,customerCode:"C2024008",customerName:"新疆协鑫",contactPerson:"马丽",phone:"18909910008",address:"新疆昌吉州甘泉堡开发区",accountStatus:"停用",createTime:"2026-03-11 10:07"},
+ {customerId:1009,customerCode:"C2024009",customerName:"内蒙中环",contactPerson:"高峰",phone:"15004710009",address:"内蒙古呼和浩特市盛乐园区",accountStatus:"正常",createTime:"2026-04-06 13:26"},
+ {customerId:1010,customerCode:"C2024010",customerName:"湖北宜化",contactPerson:"周婷",phone:"13807170010",address:"湖北省宜昌市猇亭区",accountStatus:"正常",createTime:"2026-05-19 09:33"}],
+categories:[
+ {categoryId:"c1",categoryName:"青钢化玻璃",createTime:"2026-03-19 11:29"},{categoryId:"c2",categoryName:"白钢化玻璃",createTime:"2026-03-19 11:29"},
+ {categoryId:"c3",categoryName:"高硼硅玻璃",createTime:"2026-03-19 11:29"},{categoryId:"c4",categoryName:"条水位计",createTime:"2026-03-19 11:30"},
+ {categoryId:"c5",categoryName:"K9玻璃",createTime:"2026-03-19 11:30"},{categoryId:"c6",categoryName:"石英玻璃",createTime:"2026-03-19 11:30"},
+ {categoryId:"c7",categoryName:"严条",createTime:"2026-03-19 11:30"},{categoryId:"c8",categoryName:"4.0玻璃",createTime:"2026-03-19 11:31"},
+ {categoryId:"c9",categoryName:"异形",createTime:"2026-03-19 11:31"},{categoryId:"c10",categoryName:"铝硅",createTime:"2026-03-19 11:31"},
+ {categoryId:"c11",categoryName:"毛坯",createTime:"2026-06-08 09:12"}],
+products:[
+ {productId:9001,productCode:"高0126",productSpecs:"120*12.7",categoryId:"c3",color:"#7cc4ff"},{productId:9002,productCode:"高0125",productSpecs:"160*12.7",categoryId:"c3",color:"#7cc4ff"},
+ {productId:9003,productCode:"高0124",productSpecs:"91*20",categoryId:"c3",color:"#7cc4ff"},{productId:9004,productCode:"条0363",productSpecs:"平板光160*28*17",categoryId:"c4",color:"#95d475"},
+ {productId:9005,productCode:"条0362",productSpecs:"160*28*17光",categoryId:"c4",color:"#95d475"},{productId:9006,productCode:"铝0001",productSpecs:"耐减铝硅130*34*17",categoryId:"c10",color:"#f3d19e"},
+ {productId:9007,productCode:"青0088",productSpecs:"250*20",categoryId:"c1",color:"#b3a3e0"},{productId:9008,productCode:"白0045",productSpecs:"300*100*10",categoryId:"c2",color:"#a0cfff"},
+ {productId:9009,productCode:"K9-0012",productSpecs:"φ80圆片",categoryId:"c5",color:"#f0a8b8"},{productId:9010,productCode:"石0007",productSpecs:"320*120*20",categoryId:"c6",color:"#eebe7c"},
+ {productId:9011,productCode:"4.0-0021",productSpecs:"200*60",categoryId:"c8",color:"#8ee6d3"},{productId:9012,productCode:"异0003",productSpecs:"R80异形开孔",categoryId:"c9",color:"#f5a9a9"}],
+orders:[],
+warehouses:[
+ {warehouseCode:"A-WH01",warehouseName:"A区主仓库",remark:"原料与标准件存放",createTime:"2026-01-05 09:00"},
+ {warehouseCode:"B-WH02",warehouseName:"B区半成品仓",remark:"半成品周转",createTime:"2026-01-05 09:02"},
+ {warehouseCode:"C-WH03",warehouseName:"成品发货仓",remark:"成品待出库",createTime:"2026-01-05 09:05"},
+ {warehouseCode:"D-WH04",warehouseName:"异形专区",remark:"非标/异形产品存放",createTime:"2026-03-22 14:11"}],
+inventory:[
+ {id:7001,productId:9001,specification:"120*12.7",categoryName:"高硼硅玻璃",stockQuantity:860,warehouseName:"A区主仓库",shelves:"A-01-03",inTime:"2026-08-02"},
+ {id:7002,productId:9003,specification:"91*20",categoryName:"高硼硅玻璃",stockQuantity:420,warehouseName:"A区主仓库",shelves:"A-01-08",inTime:"2026-08-05"},
+ {id:7003,productId:9004,specification:"平板光160*28*17",categoryName:"条水位计",stockQuantity:1500,warehouseName:"B区半成品仓",shelves:"B-02-01",inTime:"2026-08-08"},
+ {id:7004,productId:9007,specification:"250*20",categoryName:"青钢化玻璃",stockQuantity:230,warehouseName:"A区主仓库",shelves:"A-03-02",inTime:"2026-07-28"},
+ {id:7005,productId:9009,specification:"φ80圆片",categoryName:"K9玻璃",stockQuantity:95,warehouseName:"C区成品发货仓",shelves:"C-01-05",inTime:"2026-08-10"},
+ {id:7006,productId:9010,specification:"320*120*20",categoryName:"石英玻璃",stockQuantity:60,warehouseName:"C区成品发货仓",shelves:"C-02-01",inTime:"2026-08-12"},
+ {id:7007,productId:9012,specification:"R80异形开孔",categoryName:"异形",stockQuantity:24,warehouseName:"异形专区",shelves:"D-01-02",inTime:"2026-08-14"}],
+inbound:[
+ {inboundNo:"RK20260812001",specification:"120*12.7",categoryName:"高硼硅玻璃",num:300,warehouseName:"A区主仓库",createName:"王仓管",createTime:"2026-08-12 10:20",remark:"备货"},
+ {inboundNo:"RK20260814002",specification:"平板光160*28*17",categoryName:"条水位计",num:500,warehouseName:"B区半成品仓",createName:"王仓管",createTime:"2026-08-14 15:40",remark:"订单补产"},
+ {inboundNo:"RK20260816003",specification:"φ80圆片",categoryName:"K9玻璃",num:50,warehouseName:"C区成品发货仓",createName:"李库管",createTime:"2026-08-16 09:12",remark:""}],
+users:[
+ {userId:1,userName:"ytadmin",nickName:"管理员",dept:"总经办",phone:"13800000001",status:"正常",createTime:"2025-08-27 10:40"},
+ {userId:2,userName:"zhangwei",nickName:"张伟",dept:"销售部",phone:"13800000002",status:"正常",createTime:"2025-09-01 09:12"},
+ {userId:3,userName:"liqiang",nickName:"李强",dept:"生产部",phone:"13800000003",status:"正常",createTime:"2025-09-15 14:33"},
+ {userId:4,userName:"wangfang",nickName:"王芳",dept:"仓储部",phone:"13800000004",status:"停用",createTime:"2025-10-20 11:05"}],
+roles:[
+ {roleId:1,roleName:"超级管理员",roleKey:"admin",sort:1,status:"正常",createTime:"2025-08-27"},
+ {roleId:2,roleName:"销售专员",roleKey:"sales",sort:2,status:"正常",createTime:"2025-09-01"},
+ {roleId:3,roleName:"生产排单员",roleKey:"producer",sort:3,status:"正常",createTime:"2025-09-15"},
+ {roleId:4,roleName:"仓库管理员",roleKey:"keeper",sort:4,status:"正常",createTime:"2025-10-20"}],
+depts:[
+ {deptId:1,deptName:"启源玻璃科技",leader:"陈总",sort:0,status:"正常"},{deptId:2,deptName:"总经办",leader:"陈总",sort:1,status:"正常"},
+ {deptId:3,deptName:"销售部",leader:"张伟",sort:2,status:"正常"},{deptId:4,deptName:"生产部",leader:"李强",sort:3,status:"正常"},
+ {deptId:5,deptName:"仓储部",leader:"王芳",sort:4,status:"正常"},{deptId:6,deptName:"质检部",leader:"赵磊",sort:5,status:"正常"}],
+posts:[
+ {postId:1,postName:"管理员",postCode:"admin",sort:1,status:"正常"},{postId:2,postName:"销售专员",postCode:"sales",sort:2,status:"正常"},
+ {postId:3,postName:"排单员",postCode:"dispatcher",sort:3,status:"正常"},{postId:4,postName:"仓管员",postCode:"keeper",sort:4,status:"正常"}],
+menus:[
+ {menuName:"订单管理",icon:"drag",sort:1,perms:"order:list",type:"目录",status:"正常"},{menuName:"生产订单",icon:"color",sort:2,perms:"order:po:list",type:"菜单",status:"正常"},
+ {menuName:"销售客户汇总单",icon:"button",sort:3,perms:"order:summary:list",type:"菜单",status:"正常"},{menuName:"销售单",icon:"international",sort:4,perms:"order:slip:list",type:"菜单",status:"正常"},
+ {menuName:"产品管理",icon:"row",sort:5,perms:"product:list",type:"目录",status:"正常"},{menuName:"库存管理",icon:"input",sort:6,perms:"inventory:list",type:"目录",status:"正常"},
+ {menuName:"客户管理",icon:"process-definition",sort:7,perms:"customer:list",type:"目录",status:"正常"},{menuName:"订单新增",icon:"#",sort:8,perms:"order:po:add",type:"按钮",status:"正常"},
+ {menuName:"订单修改",icon:"#",sort:9,perms:"order:po:edit",type:"按钮",status:"正常"},{menuName:"客户删除",icon:"#",sort:10,perms:"customer:remove",type:"按钮",status:"正常"}]
+};
+/* 订单明细（标准+非标混合） */
+(function(){
+ const raw=[
+  ["202937674",1001,"c3","120*12.7",20,"160.00",20,0,"","","ytadmin","2026-08-15 09:24",0],
+  ["202937674",1001,"c4","平板光160*28*17",60,"18.00",40,0,"拍照","","ytadmin","2026-08-15 09:24",0],
+  ["201198722",1002,"c4","160*28*17光",150,"13.50",150,0,"发义乌，做木箱","","zhangwei","2026-08-11 14:02",0],
+  ["203129383",1003,"c3","91*20",25,"120.00",0,1,"拍照","出口件","zhangwei","2026-08-17 10:35",0],
+  ["203221001",1004,"c9","R80异形开孔",8,"310.00",0,0,"出口件需倒角","","ytadmin","2026-08-18 08:50",1],
+  ["203221001",1004,"c6","320*120*20",12,"540.00",4,0,"双面抛光","","ytadmin","2026-08-18 08:50",1],
+  ["203315520",1005,"c3","258*50*17",25,"165.00",0,1,"","加急出货","zhangwei","2026-08-19 11:12",1],
+  ["203315520",1005,"c1","250*20",100,"9.80",60,0,"","","zhangwei","2026-08-19 11:12",0],
+  ["203409112",1006,"c2","300*100*10",40,"76.00",0,0,"","","liqiang","2026-08-19 16:40",0],
+  ["203409112",1006,"c5","φ80圆片",30,"45.00",10,0,"","","liqiang","2026-08-19 16:40",0],
+  ["203500731",1007,"c6","320*120*20",12,"540.00",0,0,"双面抛光","","ytadmin","2026-08-20 09:05",0],
+  ["203500731",1007,"c10","耐减铝硅130*34*17",20,"88.00",0,1,"","加急","ytadmin","2026-08-20 09:05",0]];
+ DB.orders=raw.map((r,i)=>({id:5000+i,productionNo:r[0],customerId:r[1],customerName:DB.customers.find(c=>c.customerId===r[1]).customerName,
+  categoryId:r[2],categoryName:DB.categories.find(c=>c.categoryId===r[2]).categoryName,specification:r[3],num:r[4],price:r[5],finishNum:r[6],
+  urgent:r[7],remark:r[8],remark1:r[9],createName:r[10],createTime:r[11],ns:r[12]}));
+})();
+const NS_TEMPLATES=[
+ {name:"鲁西化工 · 视镜片",cust:"鲁西化工",type:"高硼硅玻璃",size:"258*50*17",qty:25,remark:"拍照",icon:"fa-circle-dot"},
+ {name:"外贸 · 水位计条料",cust:"外贸diamond",type:"条水位计",size:"三线165*30*17",qty:150,remark:"发义乌，做木箱",icon:"fa-ruler-horizontal"},
+ {name:"异形 · 观察窗",cust:"东方锅炉",type:"异形",size:"R80 异形开孔",qty:8,remark:"出口件需倒角",icon:"fa-shapes"},
+ {name:"石英 · 耐高温管板",cust:"双良硅材料",type:"石英玻璃",size:"320*120*20",qty:12,remark:"双面抛光",icon:"fa-fire-flame-curved"}];
+
+/* ========================= 通用工具 ========================= */
+const $=id=>document.getElementById(id);
+let toastTimer;
+function toast(msg,warn){$("toastTxt").textContent=msg;$("toastIc").className=warn?"fa-solid fa-circle-exclamation text-[16px] text-[#e6a23c]":"fa-solid fa-circle-check text-[16px] text-[#67c23a]";$("toast").classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>$("toast").classList.remove("show"),2600);}
+function dialog(o){
+ const ov=document.createElement("div");ov.className="dlg-overlay";
+ ov.innerHTML=`<div class="dlg" style="width:${o.width||"520px"}">
+  <div class="dlg-head"><span>${o.title}</span><i class="fa-solid fa-xmark" data-close></i></div>
+  <div class="dlg-body">${o.body}</div>
+  ${o.footer===false?"":`<div class="dlg-foot">${o.footerExtra||""}<button class="ep-btn" data-close>${o.cancelText||"取 消"}</button><button class="ep-btn primary" data-ok>${o.okText||"确 定"}</button></div>`}
+ </div>`;
+ document.body.appendChild(ov);requestAnimationFrame(()=>ov.classList.add("show"));
+ const close=()=>{ov.classList.remove("show");setTimeout(()=>ov.remove(),180);};
+ ov.addEventListener("click",e=>{
+  if(e.target===ov||e.target.closest("[data-close]")){close();return;}
+  if(e.target.closest("[data-ok]")){if(o.onOk&&o.onOk(ov)===false)return;close();}
+ });
+ return {el:ov,close};
+}
+function confirmDlg(msg,onOk){dialog({title:"系统提示",width:"410px",body:`<div style="font-size:13px;color:#606266;display:flex;gap:9px;align-items:flex-start;"><i class="fa-solid fa-circle-exclamation text-[17px]" style="color:#e6a23c"></i><span>${msg}</span></div>`,onOk});}
+function field(label,input,req){return `<div class="frow"><label class="flab${req?" req":""}">${label}</label><div class="fval">${input}</div></div>`;}
+function opts(list,valFn,labFn){return list.map(x=>`<option value="${valFn(x)}">${labFn(x)}</option>`).join("");}
+function table(cols,rows,minW){return `<div class="twrap"><table class="ep-table" style="min-width:${minW||"760px"}"><thead><tr>${cols.map(c=>`<th>${c}</th>`).join("")}</tr></thead><tbody>${rows||`<tr><td colspan="${cols.length}" style="text-align:center;color:#b1b3b8;padding:26px 0;">暂无数据</td></tr>`}</tbody></table></div>`;}
+function pager(n){const p=Math.max(1,Math.ceil(n/20));let pg="";for(let i=1;i<=Math.min(p,5);i++)pg+=`<span class="pg${i===1?" on":""}">${i}</span>`;return `<div class="pager">共 ${n} 条 · 20条/页 ${pg} ${p>1?'<i class="fa-solid fa-angle-right"></i>':""}</div>`;}
+function statusTag(s){return s==="正常"?`<span class="tag ok">正常</span>`:`<span class="tag gray">停用</span>`;}
+function urgTag(u){return u?`<span class="tag warn">加急</span>`:`<span class="tag gray">普通</span>`;}
+function stockOf(spec){const it=DB.inventory.find(x=>x.specification===spec);return it?it.stockQuantity:0;}
+function genNo(pre){return pre+String(Math.floor(90000000+Math.random()*9999999));}
+function nowStr(){const d=new Date(),p=n=>String(n).padStart(2,"0");return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;}
+function val(el,test,msg){const v=el.value.trim();if(!test(v)){el.classList.add("ferr");toast(msg,true);return null;}el.classList.remove("ferr");return v;}
+
+/* ========================= 页面状态 ========================= */
+const P={
+ po:{tab:"cust",q:"",exp:new Set()},cs:{q:"",range:"本年",exp:new Set()},sl:{q:"",exp:new Set()},
+ ca:{q:""},ct:{q:""},pa:{q:"",cat:""},pi:{q:""},cust:{}
+};
+let cur="nonstd";
+
+/* ========================= 侧边栏 ========================= */
+const MENU=[
+ {g:"订单管理",icon:"fa-file-invoice",items:[["summary","销售客户汇总单"],["po","生产订单"],["slip","销售单"],["nonstd","非标快速下单","new"]]},
+ {g:"产品管理",icon:"fa-box",items:[["cat","产品类型"],["prod","产品规格"]]},
+ {g:"库存管理",icon:"fa-warehouse",items:[["out","库存出库"],["wh","货位管理"],["stat","库存统计"],["inv","产品库存"],["count","盘点库存"],["inbound","备货入库"]]},
+ {g:"客户管理",icon:"fa-users",items:[["cust","客户信息"]]},
+ {g:"系统管理",icon:"fa-gear",items:[["user","用户管理"],["role","角色管理"],["menu","菜单管理"],["dept","部门管理"],["post","岗位管理"]]}];
+function renderSidebar(){
+ $("sidebar").innerHTML=MENU.map((m,gi)=>`
+  <div class="menu-item" data-act="grp" data-g="${gi}"><i class="fa-solid ${m.icon} w-4 text-center"></i>${m.g}<i class="fa-solid fa-angle-down ml-auto text-[10px] opacity-70"></i></div>
+  <div class="grp-body" id="grp-${gi}">${m.items.map(it=>`<div class="submenu-item" data-act="nav" data-k="${it[0]}">${it[1]}${it[2]==="new"?' <span class="tag ns" style="font-size:10px;">新增</span>':""}</div>`).join("")}</div>`).join("");
+}
+
+/* ========================= 视图渲染 ========================= */
+function renderPo(){
+ const q=P.po.q.trim();
+ const items=DB.orders.filter(o=>!q||o.customerName.includes(q));
+ const byCust={},byNo={};
+ items.forEach(o=>{(byCust[o.customerName]=byCust[o.customerName]||[]).push(o);(byNo[o.productionNo]=byNo[o.productionNo]||[]).push(o);});
+ let rows="";
+ if(P.po.tab==="cust"){
+  rows=Object.keys(byCust).map((cn,i)=>{
+   const list=byCust[cn],fin=list.filter(x=>x.finishNum>=x.num).length,sumN=list.reduce((s,x)=>s+x.num,0),sumF=list.reduce((s,x)=>s+x.finishNum,0);
+   const exp=P.po.exp.has("c:"+cn);
+   return `<tr>
+    <td>${i+1}</td><td><b style="color:#303133">${cn}</b></td><td>${list.length}</td><td>${fin}</td><td>${sumN}</td><td>${sumF}</td><td>${list[0].createTime}</td>
+    <td><span class="link-btn" data-act="po-exp" data-key="c:${cn}">${exp?"收起":"详情"}</span></td></tr>
+    ${exp?`<tr class="exp"><td colspan="8"><div style="padding:10px 14px;">
+      <table class="ep-table" style="min-width:860px;border:1px solid #eef0f3;border-radius:6px;overflow:hidden;"><thead><tr><th>单号</th><th>产品类型</th><th>产品规格</th><th>下单数</th><th>已出库数</th><th>备注1</th><th>备注2</th><th>加急</th><th>单价</th><th>创建人</th><th>创建时间</th><th>操作</th></tr></thead><tbody>
+      ${list.map(o=>`<tr><td>${o.productionNo} ${o.ns?'<span class="tag ns">非标</span>':'<span class="tag std">标准</span>'}</td><td>${o.categoryName}</td><td>${o.specification}</td><td>${o.num}</td><td>${o.finishNum}</td><td>${o.remark||"—"}</td><td>${o.remark1||"—"}</td><td>${urgTag(o.urgent)}</td><td>¥${o.price}</td><td>${o.createName}</td><td>${o.createTime}</td>
+      <td style="white-space:nowrap;"><span class="link-btn" data-act="po-edit" data-id="${o.id}">修改</span><span class="link-btn" data-act="po-urgent" data-id="${o.id}">${o.urgent?"取消加急":"加急"}</span><span class="link-btn danger" data-act="po-del" data-id="${o.id}">删除</span></td></tr>`).join("")}
+      </tbody></table></div></td></tr>`:""}`;}).join("");
+ }else{
+  rows=Object.keys(byNo).map((no,i)=>{
+   const list=byNo[no],sumN=list.reduce((s,x)=>s+x.num,0),sumF=list.reduce((s,x)=>s+x.finishNum,0);
+   const exp=P.po.exp.has("o:"+no);
+   return `<tr><td>${i+1}</td><td><b style="color:#303133">${no}</b></td><td>${list[0].customerName}</td><td>${list.length}</td><td>${sumN}</td><td>${sumF}</td><td>${list[0].createName}</td><td>${list[0].createTime}</td>
+    <td><span class="link-btn" data-act="po-print" data-no="${no}">打印</span><span class="link-btn" data-act="po-exp" data-key="o:${no}">${exp?"收起":"详情"}</span></td></tr>
+    ${exp?`<tr class="exp"><td colspan="9"><div style="padding:10px 14px;">
+      <table class="ep-table" style="min-width:860px;"><thead><tr><th>客户名称</th><th>产品类型</th><th>产品规格</th><th>下单数</th><th>已出库数</th><th>备注1</th><th>备注2</th><th>加急</th><th>单价</th><th>操作</th></tr></thead><tbody>
+      ${list.map(o=>`<tr><td>${o.customerName}</td><td>${o.categoryName}</td><td>${o.specification}</td><td>${o.num}</td><td>${o.finishNum}</td><td>${o.remark||"—"}</td><td>${o.remark1||"—"}</td><td>${urgTag(o.urgent)}</td><td>¥${o.price}</td>
+      <td style="white-space:nowrap;"><span class="link-btn" data-act="po-edit" data-id="${o.id}">修改</span><span class="link-btn" data-act="po-urgent" data-id="${o.id}">${o.urgent?"取消加急":"加急"}</span><span class="link-btn danger" data-act="po-del" data-id="${o.id}">删除</span></td></tr>`).join("")}
+      </tbody></table></div></td></tr>`:""}`;}).join("");
+ }
+ const cols=P.po.tab==="cust"?["序号","客户名称","订单总数","已完成订单数","产品总数","实际出库数","创建时间","操作"]:["序号","单号","客户","产品数","下单总数","已出库数","创建人","创建时间","操作"];
+ return `<div class="card">
+  <div class="flex flex-wrap items-center gap-2 mb-3">
+   <div class="tabbar !mb-0 !border-0 mr-2"><span class="tab ${P.po.tab==="cust"?"on":""}" data-act="po-tab" data-tab="cust">按客户汇总</span><span class="tab ${P.po.tab==="order"?"on":""}" data-act="po-tab" data-tab="order">按订单查看</span></div>
+   <input class="ep-input !w-[190px]" placeholder="客户名称" value="${P.po.q}" oninput="P.po.q=this.value" />
+   <button class="ep-btn primary sm" data-act="render"><i class="fa-solid fa-magnifying-glass"></i>搜索</button>
+   <button class="ep-btn sm" data-act="po-reset"><i class="fa-solid fa-rotate-left"></i>重置</button>
+   <div class="ml-auto flex gap-2">
+    <button class="ep-btn sm" data-act="po-export"><i class="fa-solid fa-download"></i>导出</button>
+    <button class="ep-btn primary sm" data-act="po-add"><i class="fa-solid fa-plus"></i>新增订单</button>
+   </div>
+  </div>
+  ${table(cols,rows,P.po.tab==="cust"?"820px":"900px")}${pager(items.length)}
+ </div>`;
+}
+function renderSummary(){
+ const q=P.cs.q.trim();
+ const items=DB.orders.filter(o=>!q||o.customerName.includes(q));
+ const by={};items.forEach(o=>(by[o.customerName]=by[o.customerName]||[]).push(o));
+ const rows=Object.keys(by).map((cn,i)=>{
+  const list=by[cn],sumN=list.reduce((s,x)=>s+x.num,0),sumF=list.reduce((s,x)=>s+x.finishNum,0);
+  const creators=[...new Set(list.map(x=>x.createName))].join("、");
+  const exp=P.cs.exp.has(cn);
+  return `<tr><td>${i+1}</td><td><b style="color:#303133">${cn}</b></td><td>${sumN}</td><td>${sumF}</td><td>${creators}</td>
+   <td><span class="link-btn" data-act="cs-exp" data-key="${cn}">${exp?"收起":"明细"}</span></td></tr>
+   ${exp?`<tr class="exp"><td colspan="6"><div style="padding:10px 14px;">
+    <table class="ep-table" style="min-width:860px;"><thead><tr><th>订单号</th><th>日期</th><th>产品类型</th><th>产品规格</th><th>下单数</th><th>单价</th><th>下单金额</th><th>实际出库数</th><th>实际金额</th></tr></thead><tbody>
+    ${list.map(o=>`<tr><td>${o.productionNo}</td><td>${o.createTime.slice(0,10)}</td><td>${o.categoryName}</td><td>${o.specification}</td><td>${o.num}</td><td>¥${o.price}</td><td>¥${(o.num*parseFloat(o.price)).toFixed(2)}</td><td>${o.finishNum}</td><td>¥${(o.finishNum*parseFloat(o.price)).toFixed(2)}</td></tr>`).join("")}
+    </tbody></table></div></td></tr>`:""}`;}).join("");
+ const chips=["本年","去年","本月","上月","自定义时间"];
+ return `<div class="card">
+  <div class="flex flex-wrap items-center gap-2 mb-3">
+   <span class="text-[12.5px] text-[#909399]">时间筛选</span>
+   ${chips.map(c=>`<span class="chip ${P.cs.range===c?"on":""}" data-act="cs-chip" data-r="${c}">${c}</span>`).join("")}
+   ${P.cs.range==="自定义时间"?`<input type="date" class="ep-input !w-[150px]" /> <span class="text-[#c0c4cc]">至</span> <input type="date" class="ep-input !w-[150px]" />`:""}
+   <input class="ep-input !w-[180px] ml-2" placeholder="客户名称" value="${P.cs.q}" oninput="P.cs.q=this.value" />
+   <button class="ep-btn primary sm" data-act="render"><i class="fa-solid fa-magnifying-glass"></i>搜索</button>
+   <button class="ep-btn sm" data-act="cs-reset"><i class="fa-solid fa-rotate-left"></i>重置</button>
+  </div>
+  ${table(["序号","客户名称","下单总数","实际出库总数","创建人","操作"],rows,"820px")}${pager(Object.keys(by).length)}
+  ${P.cs.range!=="本年"?`<div class="hint mt-2">已按「${P.cs.range}」过滤（原型以全量数据演示）</div>`:""}
+ </div>`;
+}
+function renderSlip(){
+ const q=P.sl.q.trim();
+ const items=DB.orders.filter(o=>!q||o.customerName.includes(q)||o.productionNo.includes(q));
+ const by={};items.forEach(o=>(by[o.productionNo]=by[o.productionNo]||[]).push(o));
+ const rows=Object.keys(by).map((no,i)=>{
+  const list=by[no],sumN=list.reduce((s,x)=>s+x.num,0),sumF=list.reduce((s,x)=>s+x.finishNum,0);
+  const exp=P.sl.exp.has(no);
+  return `<tr><td>${i+1}</td><td><b style="color:#303133">${no}</b></td><td>${list[0].customerName}</td><td>${sumN}</td><td>${sumF}</td><td>${list[0].createName}</td><td>${list[0].createTime}</td>
+   <td><span class="link-btn" data-act="sl-exp" data-key="${no}">${exp?"收起":"明细"}</span></td></tr>
+   ${exp?`<tr class="exp"><td colspan="8"><div style="padding:10px 14px;">
+    <table class="ep-table" style="min-width:860px;"><thead><tr><th>日期</th><th>产品类型</th><th>产品规格</th><th>下单数</th><th>单价</th><th>下单金额</th><th>实际出库数</th><th>实际金额</th></tr></thead><tbody>
+    ${list.map(o=>`<tr><td>${o.createTime.slice(0,10)}</td><td>${o.categoryName}</td><td>${o.specification}</td><td>${o.num}</td><td>¥${o.price}</td><td>¥${(o.num*parseFloat(o.price)).toFixed(2)}</td><td>${o.finishNum}</td><td>¥${(o.finishNum*parseFloat(o.price)).toFixed(2)}</td></tr>`).join("")}
+    </tbody></table></div></td></tr>`:""}`;}).join("");
+ return `<div class="card">
+  <div class="flex flex-wrap items-center gap-2 mb-3">
+   <input class="ep-input !w-[220px]" placeholder="订单号 / 客户名称" value="${P.sl.q}" oninput="P.sl.q=this.value" />
+   <button class="ep-btn primary sm" data-act="render"><i class="fa-solid fa-magnifying-glass"></i>搜索</button>
+   <button class="ep-btn sm" data-act="sl-reset"><i class="fa-solid fa-rotate-left"></i>重置</button>
+  </div>
+  ${table(["序号","订单号","客户名称","下单总数","实际出库总数","创建人","创建时间","操作"],rows,"860px")}${pager(Object.keys(by).length)}
+ </div>`;
+}
+function renderCust(){
+ const q=P.ca.q.trim();
+ const list=DB.customers.filter(c=>!q||c.customerName.includes(q));
+ const rows=list.map(c=>`<tr><td>${c.customerId}</td><td>${c.customerCode}</td><td><b style="color:#303133">${c.customerName}</b></td><td>${c.contactPerson}</td><td>${c.phone}</td><td>${c.address}</td><td>${statusTag(c.accountStatus)}</td><td>${c.createTime}</td>
+  <td style="white-space:nowrap;"><span class="link-btn" data-act="ca-edit" data-id="${c.customerId}">修改</span><span class="link-btn danger" data-act="ca-del" data-id="${c.customerId}">删除</span></td></tr>`).join("");
+ return `<div class="card">
+  <div class="flex flex-wrap items-center gap-2 mb-3">
+   <input class="ep-input !w-[200px]" placeholder="客户名称" value="${P.ca.q}" oninput="P.ca.q=this.value" />
+   <button class="ep-btn primary sm" data-act="render"><i class="fa-solid fa-magnifying-glass"></i>搜索</button>
+   <button class="ep-btn sm" data-act="ca-reset"><i class="fa-solid fa-rotate-left"></i>重置</button>
+   <button class="ep-btn primary sm ml-auto" data-act="ca-add"><i class="fa-solid fa-plus"></i>新增</button>
+  </div>
+  ${table(["客户ID","客户编号","客户名称","联系人","联系电话","地址","客户状态","创建时间","操作"],rows,"960px")}${pager(list.length)}
+ </div>`;
+}
+function renderCat(){
+ const q=P.ct.q.trim();
+ const list=DB.categories.filter(c=>!q||c.categoryName.includes(q));
+ const rows=list.map((c,i)=>{const cnt=DB.products.filter(p=>p.categoryId===c.categoryId).length;
+  return `<tr><td>${i+1}</td><td><b style="color:#303133">${c.categoryName}</b></td><td><span class="tag std">${cnt} 个规格</span></td><td>${c.createTime}</td>
+  <td style="white-space:nowrap;"><span class="link-btn" data-act="ct-edit" data-id="${c.categoryId}">修改</span><span class="link-btn danger" data-act="ct-del" data-id="${c.categoryId}">删除</span></td></tr>`;}).join("");
+ return `<div class="card">
+  <div class="flex flex-wrap items-center gap-2 mb-3">
+   <input class="ep-input !w-[200px]" placeholder="产品类型" value="${P.ct.q}" oninput="P.ct.q=this.value" />
+   <button class="ep-btn primary sm" data-act="render"><i class="fa-solid fa-magnifying-glass"></i>搜索</button>
+   <button class="ep-btn primary sm ml-auto" data-act="ct-add"><i class="fa-solid fa-plus"></i>新增</button>
+  </div>
+  ${table(["序号","产品类型","关联规格","创建时间","操作"],rows,"640px")}${pager(list.length)}
+ </div>`;
+}
+function renderProd(){
+ const q=P.pa.q.trim(),cat=P.pa.cat;
+ const list=DB.products.filter(p=>(!q||p.productSpecs.includes(q)||p.productCode.includes(q))&&(!cat||p.categoryId===cat));
+ const rows=list.map(p=>{const cn=DB.categories.find(c=>c.categoryId===p.categoryId).categoryName;
+  return `<tr><td><span style="display:inline-block;width:34px;height:34px;border-radius:4px;background:${p.color};opacity:.8;"></span></td><td>${p.productCode}</td><td>${cn}</td><td><b style="color:#303133">${p.productSpecs}</b></td><td>${stockOf(p.productSpecs)}</td><td>2026-0${(p.productId%6)+1}-1${p.productId%9}</td>
+  <td style="white-space:nowrap;"><span class="link-btn" data-act="pa-edit" data-id="${p.productId}">修改</span><span class="link-btn danger" data-act="pa-del" data-id="${p.productId}">删除</span></td></tr>`;}).join("");
+ return `<div class="card">
+  <div class="flex flex-wrap items-center gap-2 mb-3">
+   <select class="ep-input !w-[150px]" onchange="P.pa.cat=this.value;switchView('prod')">
+    <option value="">全部类型</option>${opts(DB.categories,c=>c.categoryId,c=>c.categoryName).replace(`value="${cat}"`,`value="${cat}" selected`)}</select>
+   <input class="ep-input !w-[190px]" placeholder="产品规格 / 编码" value="${P.pa.q}" oninput="P.pa.q=this.value" />
+   <button class="ep-btn primary sm" data-act="render"><i class="fa-solid fa-magnifying-glass"></i>搜索</button>
+   <div class="ml-auto flex gap-2">
+    <button class="ep-btn sm" data-act="pa-import"><i class="fa-solid fa-file-import"></i>导入数据</button>
+    <button class="ep-btn primary sm" data-act="pa-add"><i class="fa-solid fa-plus"></i>新增产品规格</button>
+   </div>
+  </div>
+  ${table(["产品图片","产品编码","产品类型","产品规格","当前库存","创建时间","操作"],rows,"840px")}${pager(list.length)}
+ </div>`;
+}
+function renderInv(){
+ const q=P.pi.q.trim();
+ const list=DB.inventory.filter(x=>!q||x.specification.includes(q)||x.categoryName.includes(q));
+ const rows=list.map(x=>`<tr><td><b style="color:#303133">${x.specification}</b></td><td>${x.categoryName}</td><td><b>${x.stockQuantity}</b></td><td>${x.warehouseName}</td><td>${x.shelves}</td><td>${x.inTime}</td>
+  <td style="white-space:nowrap;"><span class="link-btn" data-act="pi-adj" data-id="${x.id}">调整</span><span class="link-btn danger" data-act="pi-del" data-id="${x.id}">删除</span></td></tr>`).join("");
+ return `<div class="card">
+  <div class="flex flex-wrap items-center gap-2 mb-3">
+   <input class="ep-input !w-[220px]" placeholder="规格 / 类型" value="${P.pi.q}" oninput="P.pi.q=this.value" />
+   <button class="ep-btn primary sm" data-act="render"><i class="fa-solid fa-magnifying-glass"></i>搜索</button>
+  </div>
+  ${table(["产品规格","产品类型","库存数量","仓库","货位","最近入库","操作"],rows,"820px")}${pager(list.length)}
+ </div>`;
+}
+function renderOut(){
+ const list=DB.orders.filter(o=>o.num-o.finishNum>0);
+ const rows=list.map(o=>`<tr><td>${o.productionNo}</td><td>${o.customerName}</td><td>${o.categoryName}</td><td>${o.specification}</td><td>${o.num}</td><td>${o.finishNum}</td><td><b style="color:#e6a23c">${o.num-o.finishNum}</b></td><td>${urgTag(o.urgent)}</td>
+  <td><span class="link-btn" data-act="out-go" data-id="${o.id}">出库</span></td></tr>`).join("");
+ return `<div class="card">
+  <div class="text-[12px] text-[#909399] mb-3"><i class="fa-solid fa-circle-info mr-1"></i>待出库生产订单项（出库后回写「生产订单」与「库存」，与实际系统逻辑一致）</div>
+  ${table(["单号","客户","产品类型","产品规格","下单数","已出库","待出库","加急","操作"],rows,"900px")}${pager(list.length)}
+ </div>`;
+}
+function renderWh(){
+ const rows=DB.warehouses.map(w=>`<tr><td>${w.warehouseCode}</td><td><b style="color:#303133">${w.warehouseName}</b></td><td>${w.remark||"—"}</td><td>${DB.inventory.filter(x=>x.warehouseName===w.warehouseName).length} 条</td><td>${w.createTime}</td>
+  <td style="white-space:nowrap;"><span class="link-btn" data-act="wh-edit" data-code="${w.warehouseCode}">修改</span><span class="link-btn danger" data-act="wh-del" data-code="${w.warehouseCode}">删除</span></td></tr>`).join("");
+ return `<div class="card">
+  <div class="flex items-center mb-3"><button class="ep-btn primary sm ml-auto" data-act="wh-add"><i class="fa-solid fa-plus"></i>新增货位/仓库</button></div>
+  ${table(["货位编码","仓库名称","备注","库存条目","创建时间","操作"],rows,"760px")}
+ </div>`;
+}
+function renderStat(){
+ const total=DB.inventory.reduce((s,x)=>s+x.stockQuantity,0);
+ const pendOut=DB.orders.reduce((s,o)=>s+Math.max(0,o.num-o.finishNum),0);
+ const pendIn=DB.inbound.reduce((s,x)=>s+x.num,0);
+ const byCat={};DB.inventory.forEach(x=>{byCat[x.categoryName]=(byCat[x.categoryName]||0)+x.stockQuantity;});
+ const max=Math.max(...Object.values(byCat),1);
+ const rows=Object.keys(byCat).map(k=>`<tr><td>${k}</td><td>${byCat[k]}</td><td>${(byCat[k]/total*100).toFixed(1)}%</td><td><div class="bar"><i style="width:${(byCat[k]/max*100).toFixed(0)}%"></i></div></td></tr>`).join("");
+ return `<div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3.5">
+  <div class="stat-card"><span class="v">${DB.products.length}</span><span class="l">产品规格数</span></div>
+  <div class="stat-card"><span class="v">${total}</span><span class="l">当前总库存（件）</span></div>
+  <div class="stat-card"><span class="v" style="color:#e6a23c">${pendOut}</span><span class="l">待出库（件）</span></div>
+  <div class="stat-card"><span class="v" style="color:#67c23a">${pendIn}</span><span class="l">备货入库累计（件）</span></div>
+ </div>
+ <div class="card">${table(["产品类型","库存数量","占比","分布"],rows,"620px")}</div>`;
+}
+function renderCount(){
+ const rows=DB.inventory.map(x=>`<tr><td>${x.specification}</td><td>${x.categoryName}</td><td>${x.warehouseName}</td><td>${x.stockQuantity}</td>
+  <td><input class="ep-input !w-[110px]" id="cnt-${x.id}" placeholder="实盘数" type="number" /></td>
+  <td><span class="link-btn" data-act="cnt-do" data-id="${x.id}">确认盘点</span></td></tr>`).join("");
+ return `<div class="card">
+  <div class="text-[12px] text-[#909399] mb-3"><i class="fa-solid fa-circle-info mr-1"></i>录入实盘数量后确认，系统计算差异并留痕（原型演示不回写库存）</div>
+  ${table(["产品规格","产品类型","仓库","系统库存","实盘数量","操作"],rows,"760px")}
+ </div>`;
+}
+function renderInbound(){
+ const rows=DB.inbound.map(x=>`<tr><td>${x.inboundNo}</td><td>${x.specification}</td><td>${x.categoryName}</td><td><b>${x.num}</b></td><td>${x.warehouseName}</td><td>${x.createName}</td><td>${x.createTime}</td><td>${x.remark||"—"}</td></tr>`).join("");
+ return `<div class="card">
+  <div class="flex items-center mb-3"><button class="ep-btn primary sm ml-auto" data-act="in-add"><i class="fa-solid fa-plus"></i>新增备货入库</button></div>
+  ${table(["入库单号","产品规格","产品类型","数量","仓库","入库人","入库时间","备注"],rows,"880px")}${pager(DB.inbound.length)}
+ </div>`;
+}
+function renderUser(){
+ const rows=DB.users.map(u=>`<tr><td>${u.userId}</td><td><b style="color:#303133">${u.userName}</b></td><td>${u.nickName}</td><td>${u.dept}</td><td>${u.phone}</td><td>${statusTag(u.status)}</td><td>${u.createTime}</td>
+  <td style="white-space:nowrap;"><span class="link-btn" data-act="u-edit" data-id="${u.userId}">修改</span><span class="link-btn" data-act="u-pwd" data-id="${u.userId}">重置密码</span><span class="link-btn danger" data-act="u-del" data-id="${u.userId}">删除</span></td></tr>`).join("");
+ return `<div class="card">
+  <div class="flex items-center mb-3"><input class="ep-input !w-[200px]" placeholder="用户名称 / 手机号" /><button class="ep-btn primary sm ml-2" data-act="render"><i class="fa-solid fa-magnifying-glass"></i>搜索</button>
+  <button class="ep-btn primary sm ml-auto" data-act="u-add"><i class="fa-solid fa-plus"></i>新增用户</button></div>
+  ${table(["用户ID","用户名称","用户昵称","部门","手机号码","状态","创建时间","操作"],rows,"920px")}
+ </div>`;
+}
+function renderRole(){
+ const rows=DB.roles.map(r=>`<tr><td>${r.roleId}</td><td><b style="color:#303133">${r.roleName}</b></td><td>${r.roleKey}</td><td>${r.sort}</td><td>${statusTag(r.status)}</td><td>${r.createTime}</td>
+  <td style="white-space:nowrap;"><span class="link-btn" data-act="r-edit" data-id="${r.roleId}">修改</span><span class="link-btn danger" data-act="r-del" data-id="${r.roleId}">删除</span></td></tr>`).join("");
+ return `<div class="card">
+  <div class="flex items-center mb-3"><button class="ep-btn primary sm ml-auto" data-act="r-add"><i class="fa-solid fa-plus"></i>新增角色</button></div>
+  ${table(["角色ID","角色名称","权限字符","显示顺序","状态","创建时间","操作"],rows,"760px")}
+ </div>`;
+}
+function renderMenu(){
+ const rows=DB.menus.map(m=>`<tr><td style="padding-left:${m.type==="按钮"?"34px":"12px"}">${m.type==="按钮"?'<i class="fa-solid fa-circle text-[5px] text-[#c0c4cc] mr-2"></i>':""}<b style="color:#303133">${m.menuName}</b></td><td><i class="fa-solid fa-${m.icon==="#"?"circle-dot":m.icon} text-[#909399] mr-1"></i>${m.icon}</td><td>${m.sort}</td><td>${m.perms}</td><td><span class="tag ${m.type==="目录"?"std":m.type==="菜单"?"ok":"gray"}">${m.type}</span></td><td>${statusTag(m.status)}</td></tr>`).join("");
+ return `<div class="card"><div class="text-[12px] text-[#909399] mb-3"><i class="fa-solid fa-circle-info mr-1"></i>菜单由超级管理员统一维护（原型只读展示）</div>
+  ${table(["菜单名称","图标","显示排序","权限标识","菜单类型","状态"],rows,"720px")}</div>`;
+}
+function renderDept(){
+ const rows=DB.depts.map(d=>`<tr><td style="padding-left:${d.deptId===1?"12px":"34px"}">${d.deptId===1?"":'<i class="fa-solid fa-angle-right text-[#c0c4cc] mr-2"></i>'}<b style="color:#303133">${d.deptName}</b></td><td>${d.leader}</td><td>${d.sort}</td><td>${statusTag(d.status)}</td>
+  <td style="white-space:nowrap;"><span class="link-btn" data-act="d-edit" data-id="${d.deptId}">修改</span><span class="link-btn danger" data-act="d-del" data-id="${d.deptId}">删除</span></td></tr>`).join("");
+ return `<div class="card">
+  <div class="flex items-center mb-3"><button class="ep-btn primary sm ml-auto" data-act="d-add"><i class="fa-solid fa-plus"></i>新增部门</button></div>
+  ${table(["部门名称","负责人","显示排序","状态","操作"],rows,"640px")}
+ </div>`;
+}
+function renderPost(){
+ const rows=DB.posts.map(p=>`<tr><td>${p.postId}</td><td><b style="color:#303133">${p.postName}</b></td><td>${p.postCode}</td><td>${p.sort}</td><td>${statusTag(p.status)}</td>
+  <td style="white-space:nowrap;"><span class="link-btn" data-act="p-edit" data-id="${p.postId}">修改</span><span class="link-btn danger" data-act="p-del" data-id="${p.postId}">删除</span></td></tr>`).join("");
+ return `<div class="card">
+  <div class="flex items-center mb-3"><button class="ep-btn primary sm ml-auto" data-act="p-add"><i class="fa-solid fa-plus"></i>新增岗位</button></div>
+  ${table(["岗位ID","岗位名称","岗位编码","显示顺序","状态","操作"],rows,"640px")}
+ </div>`;
+}
+
+/* ========================= 非标快速下单（新增流程） ========================= */
+const NS={customer:null,type:null,urgent:0,items:[]};
+const NS_CUSTOM=[];/* 用户本次会话自定义的产品类型 */
+function renderNonStd(){
+ return `
+ <div class="bg-white rounded-md border border-slate-200 px-4 py-2.5 flex flex-wrap items-center gap-x-2 gap-y-1.5 mb-3.5">
+  <span class="text-[12px] text-[#909399] mr-1"><i class="fa-solid fa-route mr-1"></i>非标下单流程</span>
+  <div class="step-dot"><span class="d">1</span>选客户</div><i class="fa-solid fa-angle-right text-[10px] text-[#c0c4cc]"></i>
+  <div class="step-dot"><span class="d">2</span>选产品类型</div><i class="fa-solid fa-angle-right text-[10px] text-[#c0c4cc]"></i>
+  <div class="step-dot"><span class="d">3</span>录尺寸</div><i class="fa-solid fa-angle-right text-[10px] text-[#c0c4cc]"></i>
+  <div class="step-dot"><span class="d">4</span>备注</div><i class="fa-solid fa-angle-right text-[10px] text-[#c0c4cc]"></i>
+  <div class="step-dot"><span class="d">5</span>生成订单</div>
+  <span class="ml-auto tag ns"><i class="fa-solid fa-circle-info mr-1"></i>非标无需先建产品规格，录完即下单</span>
+ </div>
+ <div class="grid grid-cols-1 xl:grid-cols-[1fr_330px] gap-3.5">
+  <div class="bg-white rounded-md border border-slate-200" id="quickPanel">
+   <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+    <div class="text-[14px] font-semibold text-[#303133]"><i class="fa-solid fa-bolt text-[#ff7d1c] mr-1.5"></i>非标品快捷录入</div>
+    <div class="flex items-center gap-2 text-[12px] text-[#606266]"><span>连续录入（保留客户与类型）</span><span class="switch" id="nsCont" onclick="this.classList.toggle('off')"></span></div>
+   </div>
+   <div class="p-4 space-y-3.5">
+    <div>
+     <div class="flex items-center justify-between mb-1.5"><label class="text-[12.5px] text-[#606266]"><span class="text-[#f56c6c]">*</span> 客户</label>
+      <button class="text-[11.5px] text-[#409eff] hover:underline" onclick="custQuickAdd()"><i class="fa-solid fa-user-plus mr-0.5"></i>速建新客户</button></div>
+     <div class="relative">
+      <input class="ep-input" id="nsCust" placeholder="输入名称 / 拼音首字母检索，如 lxhg" autocomplete="off" onfocus="nsCustDrop(1)" oninput="nsCustDrop(1)" />
+      <i class="fa-solid fa-magnifying-glass absolute right-3 top-1/2 -translate-y-1/2 text-[#c0c4cc] text-[12px]"></i>
+      <div id="nsCustList" class="hidden absolute z-30 left-0 right-0 top-[38px] bg-white border border-slate-200 rounded-md shadow-lg py-1 max-h-[168px] overflow-auto"></div>
+     </div>
+     <div class="flex flex-wrap gap-1.5 mt-2" id="nsCustChips"></div>
+    </div>
+    <div><label class="text-[12.5px] text-[#606266] block mb-1.5"><span class="text-[#f56c6c]">*</span> 产品类型 <span class="text-[#909399] text-[11px]">（点选，也可输入自定义类型）</span></label>
+     <div class="flex flex-wrap gap-1.5" id="nsTypes"></div></div>
+    <div><label class="text-[12.5px] text-[#606266] block mb-1.5"><span class="text-[#f56c6c]">*</span> 尺寸 <span class="text-[#909399] text-[11px]">（一行速录 长*宽*厚，自动拆解）</span></label>
+     <input class="ep-input font-medium" id="nsSize" placeholder="例如 258*50*17 ，也支持 250*20 / 异形描述" oninput="nsParse(this.value)" />
+     <div class="flex flex-wrap items-center gap-1.5 mt-2"><span class="text-[11px] text-[#909399]">历史尺寸速选：</span><span id="nsHist" class="flex flex-wrap gap-1.5"></span></div>
+     <div class="mt-2 text-[12px]" id="nsParseBox"></div></div>
+    <div class="grid grid-cols-3 gap-2.5">
+     <div><label class="text-[12px] text-[#606266] block mb-1"><span class="text-[#f56c6c]">*</span> 数量</label><input class="ep-input" id="nsQty" type="number" min="1" value="10" /></div>
+     <div><label class="text-[12px] text-[#606266] block mb-1">单价(元)</label><input class="ep-input" id="nsPrice" placeholder="可后补" /></div>
+     <div><label class="text-[12px] text-[#606266] block mb-1">加急</label><button class="chip w-full justify-center" id="nsUrg" onclick="NS.urgent=NS.urgent?0:1;this.classList.toggle('on',!!NS.urgent);$('nsUrgTxt').textContent=NS.urgent?'加急':'不加急'"><i class="fa-solid fa-fire"></i><span id="nsUrgTxt">不加急</span></button></div>
+    </div>
+    <div><label class="text-[12.5px] text-[#606266] block mb-1.5">备注</label>
+     <div class="flex flex-wrap gap-1.5 mb-1.5">
+      ${["发义乌，做木箱","拍照","加急出货","出口件需倒角","双面抛光"].map(r=>`<span class="chip !py-[3px] text-[11px]" onclick="const t=$('nsRemark');t.value=t.value?t.value.replace(/\\s*$/,'，')+'${r}':'${r}'">${r}</span>`).join("")}
+     </div>
+     <textarea class="ep-input" rows="2" id="nsRemark" placeholder="包装 / 发货 / 工艺要求"></textarea></div>
+    <div class="flex flex-wrap items-center gap-2.5 pt-1">
+     <button class="ep-btn" onclick="nsAddItem()"><i class="fa-solid fa-cart-plus"></i>加入订单 <span class="kb ml-1">Enter</span></button>
+     <button class="ep-btn ns" onclick="nsCreate()"><i class="fa-solid fa-file-circle-check"></i>生成订单 <span class="kb ml-1 !bg-white/20 !border-white/40 !text-white">Ctrl+Enter</span></button>
+     <button class="ep-btn" onclick="nsReset(true)"><i class="fa-solid fa-eraser"></i>清空</button>
+     <span class="text-[11.5px] text-[#b1b3b8] ml-auto hidden lg:inline">全程键盘可完成：Tab 切换 · Enter 加项 · Ctrl+Enter 下单</span>
+    </div>
+   </div>
+  </div>
+  <div class="bg-white rounded-md border border-slate-200 flex flex-col">
+   <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between"><div class="text-[14px] font-semibold text-[#303133]"><i class="fa-solid fa-receipt text-[#409eff] mr-1.5"></i>订单预览</div><span class="tag ns">非标</span></div>
+   <div class="p-3 space-y-2 flex-1 overflow-auto max-h-[430px]" id="nsItems"></div>
+   <div class="border-t border-slate-100 px-4 py-3 space-y-1.5">
+    <div class="flex justify-between text-[12.5px] text-[#606266]"><span>客户</span><span id="nsPvCust" class="text-[#303133] font-medium">—</span></div>
+    <div class="flex justify-between text-[12.5px] text-[#606266]"><span>项数 / 总数量</span><span class="text-[#303133] font-medium"><span id="nsPvCnt">0</span> 项 / <span id="nsPvQty">0</span> 件</span></div>
+    <button class="ep-btn ns w-full justify-center mt-1" onclick="nsCreate()"><i class="fa-solid fa-paper-plane"></i>生成订单</button>
+    <div class="text-[11px] text-[#b1b3b8] text-center">提交后进入「生产订单」（非标标记），自动接入出库/汇总环节</div>
+   </div>
+  </div>
+ </div>
+ <div class="bg-white rounded-md border border-slate-200 mt-3.5">
+  <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+   <div class="text-[14px] font-semibold text-[#303133]"><i class="fa-solid fa-star text-[#f7ba2a] mr-1.5"></i>常用快捷方式 <span class="text-[11.5px] font-normal text-[#909399]">（高频非标件存成模板，一键带出 客户+类型+尺寸+备注）</span></div>
+   <button class="ep-btn !py-[5px] sm" onclick="toast('原型演示：已将当前表单保存为快捷方式模板')"><i class="fa-solid fa-plus"></i>存为快捷方式</button>
+  </div>
+  <div class="p-4 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+   ${NS_TEMPLATES.map((t,i)=>`<div class="tpl-card" id="nsTpl-${i}" onclick="nsApplyTpl(${i})">
+    <div class="flex items-center gap-2 mb-1.5"><span class="w-7 h-7 rounded-md bg-white text-[#ff7d1c] flex items-center justify-center shadow-sm"><i class="fa-solid ${t.icon} text-[13px]"></i></span>
+    <div class="text-[12.5px] font-semibold text-[#303133] leading-tight">${t.name}</div></div>
+    <div class="text-[11px] text-[#8a5a2b] leading-relaxed">${t.type} · ${t.size}<br>客户：${t.cust} · 备注：${t.remark}</div>
+    <div class="mt-1.5 text-[11px] text-[#ff7d1c] font-medium"><i class="fa-solid fa-bolt mr-0.5"></i>点击一键带出 <span class="kb ml-1">Alt+${i+1}</span></div></div>`).join("")}
+  </div>
+ </div>`;
+}
+function nsInit(){
+ $("nsCustChips").innerHTML=DB.customers.slice(0,5).map(c=>`<span class="chip" onclick="nsPickCust('${c.customerName}')"><i class="fa-regular fa-clock text-[10px] opacity-70"></i>${c.customerName}</span>`).join("");
+ nsRenderTypes(NS.type);
+ $("nsHist").innerHTML=["258*50*17","250*20","三线165*30*17","160*28*17"].map(s=>`<span class="chip !py-[3px]" onclick="$('nsSize').value='${s}';nsParse('${s}')">${s}</span>`).join("");
+ nsRenderItems();
+}
+function nsCustDrop(){
+ const kw=$("nsCust").value.trim();
+ const py={"鲁西化工":"lxhg","外贸diamond":"wmdiamond","外贸NATIONAL":"wmnational","东方锅炉":"dfgl","青海丽豪":"qhlh","南玻节能":"nbjn","双良硅材料":"slgcl"};
+ const list=DB.customers.filter(c=>!kw||c.customerName.includes(kw)||(py[c.customerName]||"").startsWith(kw.toLowerCase()));
+ $("nsCustList").classList.remove("hidden");
+ $("nsCustList").innerHTML=list.length?list.map(c=>`<div class="px-3 py-2 text-[12.5px] text-[#303133] cursor-pointer hover:bg-[#ecf5ff] hover:text-[#409eff]" onclick="nsPickCust('${c.customerName}')"><i class="fa-regular fa-building mr-1.5 text-[#c0c4cc]"></i>${c.customerName} <span class="text-[11px] text-[#c0c4cc]">${c.contactPerson} ${c.phone}</span></div>`).join(""):'<div class="px-3 py-3 text-[12px] text-[#b1b3b8]">无匹配客户，可点右上「速建新客户」</div>';
+}
+function nsPickCust(n){NS.customer=n;$("nsCust").value=n;$("nsCustList").classList.add("hidden");$("nsPvCust").textContent=n;
+ document.querySelectorAll("#nsCustChips .chip").forEach(el=>el.classList.toggle("on",el.textContent.trim()===n));}
+function nsPickType(el,t){NS.type=t;nsRenderTypes(t);}
+/* 产品类型芯片：固定11类 + 已添加的自定义类型 + 「自定义类型」入口 */
+function nsRenderTypes(sel){
+ $("nsTypes").innerHTML=DB.categories.map(c=>`<span class="chip${sel===c.categoryName?" on":""}" onclick="nsPickType(this,'${c.categoryName}')">${c.categoryName}</span>`).join("")
+ +NS_CUSTOM.map(n=>`<span class="chip${sel===n?" on":""}" style="border-color:#ffd9b8;color:#ff7d1c;background:#fff9f3;" onclick="nsPickType(this,'${n}')"><i class="fa-solid fa-pen text-[9px] opacity-70"></i>${n}</span>`).join("")
+ +`<span class="chip" style="border-style:dashed;color:#909399;" onclick="nsCustomType()"><i class="fa-solid fa-plus"></i>自定义类型</span>
+ <span id="nsCustomBox" style="display:none;align-items:center;gap:6px;margin-left:2px;">
+  <input class="ep-input" id="nsCustomInput" style="width:150px;" placeholder="输入新类型名称" onkeydown="if(event.key==='Enter'){event.preventDefault();nsCustomConfirm();}" />
+  <button class="ep-btn sm primary" onclick="nsCustomConfirm()">确定</button>
+  <button class="ep-btn sm" onclick="nsCustomCancel()">取消</button>
+ </span>`;
+}
+function nsCustomType(){$("nsCustomBox").style.display="inline-flex";$("nsCustomInput").value="";$("nsCustomInput").focus();}
+function nsCustomCancel(){nsRenderTypes(NS.type);}
+function nsCustomConfirm(){
+ const name=$("nsCustomInput").value.trim();
+ if(!name){toast("请输入自定义类型名称",true);$("nsCustomInput").focus();return;}
+ if(DB.categories.some(c=>c.categoryName===name)||NS_CUSTOM.includes(name)){toast("该类型已存在，直接点选即可",true);return;}
+ NS_CUSTOM.push(name);NS.type=name;nsRenderTypes(name);
+ toast(`已添加并选中自定义类型「${name}」`);
+}
+function nsParse(v){const box=$("nsParseBox");const parts=v.split(/[*xX×]+/).map(s=>s.trim()).filter(Boolean);
+ if(!v.trim()){box.innerHTML="";return;}
+ if(parts.length>=2&&parts.every(p=>/^[\d.]+$/.test(p))){const dims=["长","宽","厚","径"];
+  box.innerHTML=`<i class="fa-solid fa-circle-check text-[#67c23a] mr-1"></i>已识别：`+parts.slice(0,4).map((p,i)=>`<span class="parse-chip">${dims[i]} ${p}mm</span>`).join(`<span class="text-[#c0c4cc] mx-0.5">×</span>`);}
+ else{box.innerHTML=`<span class="text-[#e6a23c]"><i class="fa-solid fa-shapes mr-1"></i>按异形/描述录入：「${v.trim()}」</span>`;}}
+function nsApplyTpl(i){const t=NS_TEMPLATES[i];nsPickCust(t.cust);
+ const chip=[...document.querySelectorAll("#nsTypes .chip")].find(c=>c.textContent.trim()===t.type);if(chip)nsPickType(chip,t.type);
+ $("nsSize").value=t.size;nsParse(t.size);$("nsQty").value=t.qty;$("nsRemark").value=t.remark;
+ const card=$("nsTpl-"+i);card.classList.remove("flash");void card.offsetWidth;card.classList.add("flash");
+ toast(`已带出快捷方式「${t.name}」，确认数量后即可下单`);}
+function nsAddItem(){
+ if(!NS.customer){toast("请先选择客户",true);return;}
+ if(!NS.type){toast("请先选择产品类型",true);return;}
+ const size=$("nsSize").value.trim();if(!size){toast("请填写尺寸",true);$("nsSize").focus();return;}
+ const qty=parseInt($("nsQty").value||"0",10);if(qty<=0){toast("数量需大于 0",true);return;}
+ NS.items.push({cust:NS.customer,type:NS.type,size,qty,price:$("nsPrice").value.trim(),urgent:NS.urgent,remark:$("nsRemark").value.trim()});
+ nsRenderItems();toast(`已加入订单（${size} × ${qty}）`);
+ const keep=$("nsCont")&&!$("nsCont").classList.contains("off");
+ if(keep){$("nsSize").value="";$("nsParseBox").innerHTML="";$("nsRemark").value="";$("nsQty").value=10;$("nsPrice").value="";$("nsSize").focus();}
+}
+function nsRenderItems(){
+ $("nsItems").innerHTML=NS.items.length?NS.items.map((it,idx)=>`
+  <div class="order-row border border-slate-200 rounded-md px-3 py-2.5 bg-[#fafbfc]">
+   <div class="flex items-center justify-between mb-1"><span class="text-[12.5px] font-semibold text-[#303133]">${it.type}</span>
+    <span class="flex items-center gap-1.5">${it.urgent?'<span class="tag warn">加急</span>':""}<span class="tag ns">非标</span>
+    <i class="fa-solid fa-xmark text-[#c0c4cc] cursor-pointer hover:text-[#f56c6c]" onclick="NS.items.splice(${idx},1);nsRenderItems()"></i></span></div>
+   <div class="text-[12px] text-[#606266]">尺寸 <b class="text-[#303133]">${it.size}</b> × ${it.qty} 件${it.price?` · ¥${it.price}/件`:" · 单价后补"}</div>
+   ${it.remark?`<div class="text-[11px] text-[#909399] mt-0.5"><i class="fa-regular fa-comment-dots mr-1"></i>${it.remark}</div>`:""}
+  </div>`).join(""):'<div class="text-[12px] text-[#b1b3b8] text-center py-8"><i class="fa-solid fa-inbox text-[22px] block mb-2 opacity-60"></i>加入的订单项会显示在这里</div>';
+ $("nsPvCnt").textContent=NS.items.length;$("nsPvQty").textContent=NS.items.reduce((s,i)=>s+i.qty,0);
+}
+function nsCreate(){
+ if(!NS.items.length){toast("请先加入至少一个订单项",true);return;}
+ const no=genNo("FS");
+ NS.items.forEach(it=>{const c=DB.customers.find(x=>x.customerName===it.cust);
+  DB.orders.unshift({id:Date.now()+Math.random(),productionNo:no,customerId:c?c.customerId:0,customerName:it.cust,categoryId:"",categoryName:it.type,specification:it.size,num:it.qty,price:it.price||"0.00",finishNum:0,urgent:it.urgent,remark:it.remark,remark1:"",createName:"ytadmin",createTime:nowStr(),ns:1});});
+ toast(`订单创建成功，订单号 ${no}（非标 ${NS.items.length} 项），已同步进入「生产订单」`);
+ NS.items=[];nsRenderItems();nsReset(false,true);
+}
+function nsReset(all,keepCust){$("nsSize").value="";$("nsParseBox").innerHTML="";$("nsRemark").value="";$("nsQty").value=10;$("nsPrice").value="";NS.urgent=0;const u=$("nsUrg");if(u){u.classList.remove("on");$("nsUrgTxt").textContent="不加急";}
+ if(all||!keepCust){$("nsCust").value="";NS.customer=null;$("nsPvCust").textContent="—";NS.type=null;
+  document.querySelectorAll("#nsCustChips .chip,#nsTypes .chip").forEach(c=>c.classList.remove("on"));}}
+function custQuickAdd(){
+ dialog({title:"速建新客户",width:"470px",body:
+  field("客户名称",`<input class="ep-input" id="qc-name" placeholder="请输入客户名称" />`,1)+
+  field("联系人",`<input class="ep-input" id="qc-person" placeholder="请输入联系人" />`)+
+  field("联系电话",`<input class="ep-input" id="qc-phone" placeholder="请输入手机号" />`,1)+
+  `<div class="hint" style="margin-left:88px;">其余资料可稍后在「客户管理-客户信息」补全</div>`,
+  onOk:ov=>{
+   const name=val(ov.querySelector("#qc-name"),v=>v.length>=2,"客户名称至少 2 个字符");if(name===null)return false;
+   const phone=val(ov.querySelector("#qc-phone"),v=>/^1[3-9]\d{9}$/.test(v),"请输入正确的手机号码");if(phone===null)return false;
+   DB.customers.unshift({customerId:1000+DB.customers.length+1,customerCode:"C2024"+String(DB.customers.length+11).padStart(3,"0"),customerName:name,contactPerson:ov.querySelector("#qc-person").value.trim()||"—",phone,address:"",accountStatus:"正常",createTime:nowStr()});
+   toast(`客户「${name}」建档成功，可继续下单`);nsInit();nsPickCust(name);
+  }});
+}
+
+/* ========================= 弹窗：生产订单相关 ========================= */
+function poFillCusts(){const s=$("po-cust");if(!s)return;s.innerHTML=`<option value="">请选择客户</option>`+opts(DB.customers,c=>c.customerId,c=>c.customerName);}
+let poSelCat="";
+/* 产品类型芯片点选 + 自定义类型（与非标快速下单同款交互） */
+function poRenderTypeChips(sel){
+ $("po-cats").innerHTML=DB.categories.map(c=>`<span class="chip${sel===c.categoryId?" on":""}" onclick="poPickType('${c.categoryId}')">${c.categoryName}</span>`).join("")
+ +NS_CUSTOM.map(n=>`<span class="chip${sel===("x-"+n)?" on":""}" style="border-color:#ffd9b8;color:#ff7d1c;background:#fff9f3;" onclick="poPickType('x-${n}')"><i class="fa-solid fa-pen text-[9px] opacity-70"></i>${n}</span>`).join("")
+ +`<span class="chip" style="border-style:dashed;color:#909399;" onclick="poCustomType()"><i class="fa-solid fa-plus"></i>自定义类型</span>
+ <span id="poCustomBox" style="display:none;align-items:center;gap:6px;margin-left:2px;">
+  <input class="ep-input" id="poCustomInput" style="width:150px;" placeholder="输入新类型名称" onkeydown="if(event.key==='Enter'){event.preventDefault();poCustomConfirm();}" />
+  <button class="ep-btn sm primary" onclick="poCustomConfirm()">确定</button>
+  <button class="ep-btn sm" onclick="poCustomCancel()">取消</button>
+ </span>`;
+}
+function poPickType(cid){poSelCat=cid;poRenderTypeChips(cid);poLoadSpecs();}
+function poCustomType(){$("poCustomBox").style.display="inline-flex";$("poCustomInput").value="";$("poCustomInput").focus();}
+function poCustomCancel(){poRenderTypeChips(poSelCat);}
+function poCustomConfirm(){
+ const name=$("poCustomInput").value.trim();
+ if(!name){toast("请输入自定义类型名称",true);$("poCustomInput").focus();return;}
+ if(DB.categories.some(c=>c.categoryName===name)||NS_CUSTOM.includes(name)){toast("该类型已存在，直接点选即可",true);return;}
+ NS_CUSTOM.push(name);poPickType("x-"+name);
+ toast(`已添加并选中自定义类型「${name}」`);
+}
+function poLoadSpecs(){
+ const s=$("po-spec");if(!s)return;
+ if(!poSelCat){s.innerHTML='<option value="">请先选择产品类型</option>';return;}
+ const list=DB.products.filter(p=>p.categoryId===poSelCat);
+ s.innerHTML=list.length?`<option value="">请选择产品规格</option>`+list.map(p=>`<option value="${p.productId}">${p.productSpecs}（库存 ${stockOf(p.productSpecs)}）</option>`).join(""):
+ (poSelCat.startsWith("x-")?'<option value="">自定义类型暂无规格档案，请点下方「快速新增产品规格」</option>':'<option value="">该类型下暂无规格，可点下方「快速新增产品规格」</option>');
+}
+function addOrderDialog(){
+ poSelCat="";
+ dialog({title:"新增订单",width:"780px",body:
+  field("客户",`<select class="ep-input" id="po-cust"></select><div class="hint"><span class="link-btn" style="margin:0" onclick="poNewCust()">＋ 快速新增客户</span></div>`,1)+
+  field("产品类型",`<div class="flex flex-wrap gap-1.5" id="po-cats"></div><div class="hint">与「非标快速下单」同款：芯片点选，末尾可添加自定义类型</div>`,1)+
+  field("产品规格",`<select class="ep-input" id="po-spec" onchange="const p=DB.products.find(x=>x.productId==this.value);if(p)$('po-price').value=($('po-price').value||p.price||'')"></select><div class="hint"><span class="link-btn" style="margin:0" onclick="poNewSpec()">＋ 快速新增产品规格</span> · 选择后自动带出库存与参考单价</div>`,1)+
+  `<div class="frow"><label class="flab req">订单数量</label><div class="fval" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+   <div><input class="ep-input" id="po-num" type="number" min="1" value="10" /></div>
+   <div><input class="ep-input" id="po-price" placeholder="单价（元/件，可后补）" /></div>
+   <div style="display:flex;align-items:center;gap:8px;"><span class="switch off" id="po-urgent" onclick="this.classList.toggle('off')"></span><span style="font-size:12px;color:#909399;">加急</span></div>
+  </div></div>`+
+  `<div class="frow"><label class="flab">备注1</label><div class="fval" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+   <div><input class="ep-input" id="po-r1" placeholder="如：发义乌，做木箱" /></div>
+   <div><input class="ep-input" id="po-r2" placeholder="备注2（选填）" /></div>
+  </div></div>`,
+  onOk:ov=>{
+   if(!poSelCat){toast("请选择产品类型",true);return false;}
+   const custId=ov.querySelector("#po-cust").value,pid=ov.querySelector("#po-spec").value,num=parseInt(ov.querySelector("#po-num").value||"0",10);
+   if(!custId){toast("请选择客户",true);return false;}
+   if(!pid){toast("请选择产品规格",true);return false;}
+   if(num<=0){toast("订单数量需大于 0",true);return false;}
+   const c=DB.customers.find(x=>x.customerId==custId),p=DB.products.find(x=>x.productId==pid);
+   const isCustom=poSelCat.startsWith("x-");
+   const catId=isCustom?poSelCat:p.categoryId;
+   const catName=isCustom?poSelCat.slice(2):((DB.categories.find(x=>x.categoryId===catId)||{categoryName:""}).categoryName);
+   const no=genNo("20");
+   DB.orders.unshift({id:Date.now(),productionNo:no,customerId:+custId,customerName:c.customerName,categoryId:catId,categoryName:catName,specification:p.productSpecs,num,price:ov.querySelector("#po-price").value.trim()||"0.00",finishNum:0,urgent:ov.querySelector("#po-urgent").classList.contains("off")?0:1,remark:ov.querySelector("#po-r1").value.trim(),remark1:ov.querySelector("#po-r2").value.trim(),createName:"ytadmin",createTime:nowStr(),ns:isCustom?1:0});
+   toast(`订单创建成功，单号 ${no}`);switchView("po");
+  }});
+ poFillCusts();poRenderTypeChips("");poLoadSpecs();
+}
+function poNewCust(){
+ dialog({title:"新增客户",width:"470px",body:
+  field("客户名称",`<input class="ep-input" id="nc-name" />`,1)+field("联系人",`<input class="ep-input" id="nc-person" />`)+
+  field("联系电话",`<input class="ep-input" id="nc-phone" />`,1)+field("地址",`<input class="ep-input" id="nc-addr" />`),
+  onOk:ov=>{
+   const name=val(ov.querySelector("#nc-name"),v=>v.length>=2&&v.length<=50,"客户名称长度需在 2-50 之间");if(name===null)return false;
+   const phone=val(ov.querySelector("#nc-phone"),v=>/^1[3-9]\d{9}$/.test(v),"请输入正确的手机号码");if(phone===null)return false;
+   DB.customers.unshift({customerId:1000+DB.customers.length+1,customerCode:"C2024"+String(DB.customers.length+11).padStart(3,"0"),customerName:name,contactPerson:ov.querySelector("#nc-person").value.trim()||"—",phone,address:ov.querySelector("#nc-addr").value.trim(),accountStatus:"正常",createTime:nowStr()});
+   toast(`客户「${name}」新增成功`);poFillCusts();$("po-cust").value=DB.customers[0].customerId;
+  }});
+}
+function poNewCat(){
+ dialog({title:"新增产品类型",width:"420px",body:field("产品类型",`<input class="ep-input" id="ncat-name" placeholder="请输入产品类型名称" />`,1),
+  onOk:ov=>{const name=val(ov.querySelector("#ncat-name"),v=>v.length>=2,"请输入产品类型名称");if(name===null)return false;
+   if(DB.categories.some(c=>c.categoryName===name)||NS_CUSTOM.includes(name)){toast("该类型已存在，直接点选即可",true);return false;}
+   DB.categories.push({categoryId:"c"+(DB.categories.length+1),categoryName:name,createTime:nowStr()});
+   toast(`产品类型「${name}」新增成功`);poPickType(DB.categories[DB.categories.length-1].categoryId);}});
+}
+function poNewSpec(){
+ const curName=poSelCat.startsWith("x-")?poSelCat.slice(2):((DB.categories.find(c=>c.categoryId===poSelCat)||{}).categoryName||"");
+ dialog({title:"新增产品规格",width:"520px",body:
+  field("产品类型",`<div class="flex flex-wrap gap-1.5" id="nsp-cats">${DB.categories.map(c=>`<span class="chip${c.categoryName===curName?" on":""}" onclick="this.classList.toggle('on')">${c.categoryName}</span>`).join("")}</div>`,1)+
+  field("产品规格",`<input class="ep-input" id="nsp-spec" placeholder="如 258*50*17" />`,1),
+  onOk:ov=>{
+   const cats=[...ov.querySelectorAll("#nsp-cats .chip.on")].map(x=>x.textContent.trim());
+   if(!cats.length){toast("请至少选择一个产品类型",true);return false;}
+   const spec=val(ov.querySelector("#nsp-spec"),v=>v.length>=2,"请输入产品规格");if(spec===null)return false;
+   const cid=DB.categories.find(c=>c.categoryName===cats[0]).categoryId;
+   DB.products.push({productId:9000+DB.products.length+1,productCode:"新"+String(DB.products.length+1).padStart(3,"0"),productSpecs:spec,categoryId:cid,color:"#a8d8ff"});
+   toast(`产品规格「${spec}」新增成功`);poPickType(cid);$("po-spec").value=DB.products[DB.products.length-1].productId;
+  }});
+}
+function poEditDialog(id){
+ const o=DB.orders.find(x=>x.id==id);if(!o)return;
+ dialog({title:`修改订单项 · ${o.productionNo}`,width:"480px",body:
+  `<div class="hint" style="margin:0 0 12px 0;">${o.categoryName} · ${o.specification} · 客户：${o.customerName}</div>`+
+  field("订单数量",`<input class="ep-input" id="pe-num" type="number" min="1" value="${o.num}" />`,1)+
+  field("单价",`<input class="ep-input" id="pe-price" value="${o.price}" />`)+
+  field("备注1",`<input class="ep-input" id="pe-r1" value="${o.remark}" />`)+
+  field("备注2",`<input class="ep-input" id="pe-r2" value="${o.remark1}" />`),
+  onOk:ov=>{
+   const num=parseInt(ov.querySelector("#pe-num").value||"0",10);
+   if(num<=0){toast("订单数量需大于 0",true);return false;}
+   Object.assign(o,{num,price:ov.querySelector("#pe-price").value.trim()||o.price,remark:ov.querySelector("#pe-r1").value.trim(),remark1:ov.querySelector("#pe-r2").value.trim()});
+   toast("修改成功");switchView("po");
+  }});
+}
+
+/* ========================= 弹窗：客户/产品/库存等 ========================= */
+function caFormDialog(row){
+ const isEdit=!!row;
+ dialog({title:isEdit?"修改客户档案":"添加客户档案",width:"520px",body:
+  field("客户名称",`<input class="ep-input" id="cf-name" maxlength="50" value="${row?row.customerName:""}" placeholder="请输入客户名称" />`,1)+
+  field("联系人",`<input class="ep-input" id="cf-person" maxlength="20" value="${row?row.contactPerson:""}" placeholder="请输入联系人" />`,1)+
+  field("联系电话",`<input class="ep-input" id="cf-phone" maxlength="20" value="${row?row.phone:""}" placeholder="请输入联系电话" />`,1)+
+  field("地址",`<input class="ep-input" id="cf-addr" maxlength="200" value="${row?row.address:""}" placeholder="请输入地址" />`,1),
+  onOk:ov=>{
+   const name=val(ov.querySelector("#cf-name"),v=>v.length>=2&&v.length<=50,"客户名称长度必须介于 2 和 50 之间");if(name===null)return false;
+   const person=val(ov.querySelector("#cf-person"),v=>!!v,"联系人不能为空");if(person===null)return false;
+   const phone=val(ov.querySelector("#cf-phone"),v=>/^1[3-9]\d{9}$/.test(v),"请输入正确的手机号码");if(phone===null)return false;
+   const addr=val(ov.querySelector("#cf-addr"),v=>!!v,"地址不能为空");if(addr===null)return false;
+   if(isEdit){Object.assign(row,{customerName:name,contactPerson:person,phone,address:addr});toast("修改成功");}
+   else{DB.customers.unshift({customerId:1000+DB.customers.length+1,customerCode:"C2024"+String(DB.customers.length+11).padStart(3,"0"),customerName:name,contactPerson:person,phone,address:addr,accountStatus:"正常",createTime:nowStr()});toast("新增成功");}
+   switchView("cust");
+  }});
+}
+function catFormDialog(row){
+ const isEdit=!!row;
+ dialog({title:isEdit?"修改产品类型":"新增产品类型",width:"420px",body:field("产品类型",`<input class="ep-input" id="ctf-name" value="${row?row.categoryName:""}" placeholder="请输入产品类型" />`,1),
+  onOk:ov=>{const name=val(ov.querySelector("#ctf-name"),v=>v.length>=2,"请输入产品类型");if(name===null)return false;
+   if(isEdit){row.categoryName=name;toast("修改成功");}else{DB.categories.push({categoryId:"c"+(DB.categories.length+1),categoryName:name,createTime:nowStr()});toast("新增成功");}
+   switchView("cat");}});
+}
+function paFormDialog(row){
+ const isEdit=!!row;
+ const sel=row?[DB.categories.find(c=>c.categoryId===row.categoryId).categoryName]:[];
+ dialog({title:isEdit?"修改产品规格":"新增产品规格",width:"520px",body:
+  field("产品类型",`<div class="flex flex-wrap gap-1.5" id="paf-cats">${DB.categories.map(c=>`<span class="chip ${sel.includes(c.categoryName)?"on":""}" onclick="this.classList.toggle('on')">${c.categoryName}</span>`).join("")}</div>`,1)+
+  field("产品规格",`<input class="ep-input" id="paf-spec" value="${row?row.productSpecs:""}" placeholder="如 258*50*17" />`,1),
+  onOk:ov=>{
+   const cats=[...ov.querySelectorAll("#paf-cats .chip.on")].map(x=>x.textContent.trim());
+   if(!cats.length){toast("请至少选择一个产品类型",true);return false;}
+   const spec=val(ov.querySelector("#paf-spec"),v=>v.length>=2,"请输入产品规格");if(spec===null)return false;
+   const cid=DB.categories.find(c=>c.categoryName===cats[0]).categoryId;
+   if(isEdit){Object.assign(row,{productSpecs:spec,categoryId:cid});toast("修改成功");}
+   else{DB.products.push({productId:9000+DB.products.length+1,productCode:"新"+String(DB.products.length+1).padStart(3,"0"),productSpecs:spec,categoryId:cid,color:"#a8d8ff"});toast("新增成功");}
+   switchView("prod");
+  }});
+}
+function piAdjDialog(id){
+ const x=DB.inventory.find(v=>v.id==id);
+ dialog({title:`调整库存 · ${x.specification}`,width:"440px",body:
+  `<div class="hint" style="margin:0 0 12px 0;">当前库存：<b style="color:#303133">${x.stockQuantity}</b> 件 · ${x.warehouseName} · ${x.shelves}</div>`+
+  field("调整类型",`<select class="ep-input" id="adj-type"><option value="in">入库（增加）</option><option value="out">出库（减少）</option></select>`)+
+  field("数量",`<input class="ep-input" id="adj-num" type="number" min="1" value="10" />`,1),
+  onOk:ov=>{
+   const n=parseInt(ov.querySelector("#adj-num").value||"0",10);
+   if(n<=0){toast("数量需大于 0",true);return false;}
+   if(ov.querySelector("#adj-type").value==="out"&&n>x.stockQuantity){toast("出库数量不能超过当前库存",true);return false;}
+   x.stockQuantity+=ov.querySelector("#adj-type").value==="in"?n:-n;
+   toast(`库存调整成功，当前 ${x.stockQuantity} 件`);switchView("inv");
+  }});
+}
+function outDialog(id){
+ const o=DB.orders.find(x=>x.id==id);const remain=o.num-o.finishNum;
+ dialog({title:`出库 · ${o.productionNo}`,width:"460px",body:
+  `<div class="hint" style="margin:0 0 12px 0;">${o.customerName} · ${o.specification} · 待出库 <b style="color:#e6a23c">${remain}</b> 件</div>`+
+  field("本次出库数",`<input class="ep-input" id="out-num" type="number" min="1" max="${remain}" value="${remain}" />`,1)+
+  field("出库货位",`<select class="ep-input" id="out-wh">${opts(DB.warehouses,w=>w.warehouseName,w=>w.warehouseName)}</select>`),
+  onOk:ov=>{
+   const n=parseInt(ov.querySelector("#out-num").value||"0",10);
+   if(n<=0||n>remain){toast(`出库数需在 1-${remain} 之间`,true);return false;}
+   o.finishNum+=n;
+   const inv=DB.inventory.find(x=>x.specification===o.specification);
+   if(inv)inv.stockQuantity=Math.max(0,inv.stockQuantity-n);
+   toast(o.finishNum>=o.num?`出库成功，${o.productionNo} 已全部出库完成`:`出库成功，本次 ${n} 件，剩余 ${o.num-o.finishNum} 件`);
+   switchView("out");
+  }});
+}
+function whFormDialog(row){
+ const isEdit=!!row;
+ dialog({title:isEdit?"修改货位/仓库":"新增货位/仓库",width:"460px",body:
+  field("仓库名称",`<input class="ep-input" id="wh-name" value="${row?row.warehouseName:""}" placeholder="如 E区新仓库" />`,1)+
+  field("货位编码",`<input class="ep-input" id="wh-code" value="${row?row.warehouseCode:""}" placeholder="如 E-WH05" />`,1)+
+  field("备注",`<input class="ep-input" id="wh-remark" value="${row?row.remark:""}" placeholder="选填" />`),
+  onOk:ov=>{
+   const name=val(ov.querySelector("#wh-name"),v=>!!v,"请输入仓库名称");if(name===null)return false;
+   const code=val(ov.querySelector("#wh-code"),v=>!!v,"请输入货位编码");if(code===null)return false;
+   if(isEdit){Object.assign(row,{warehouseName:name,warehouseCode:code,remark:ov.querySelector("#wh-remark").value.trim()});toast("修改成功");}
+   else{DB.warehouses.push({warehouseCode:code,warehouseName:name,remark:ov.querySelector("#wh-remark").value.trim(),createTime:nowStr()});toast("新增成功");}
+   switchView("wh");
+  }});
+}
+function inboundDialog(){
+ dialog({title:"新增备货入库",width:"520px",body:
+  field("产品类型",`<select class="ep-input" id="ib-cat" onchange="ibLoadSpecs()"><option value="">请选择</option>${opts(DB.categories,c=>c.categoryId,c=>c.categoryName)}</select>`,1)+
+  field("产品规格",`<select class="ep-input" id="ib-spec"><option value="">请先选择类型</option></select>`,1)+
+  field("入库数量",`<input class="ep-input" id="ib-num" type="number" min="1" value="50" />`,1)+
+  field("入库仓库",`<select class="ep-input" id="ib-wh">${opts(DB.warehouses,w=>w.warehouseName,w=>w.warehouseName)}</select>`)+
+  field("备注",`<input class="ep-input" id="ib-remark" placeholder="选填" />`),
+  onOk:ov=>{
+   const pid=ov.querySelector("#ib-spec").value,n=parseInt(ov.querySelector("#ib-num").value||"0",10);
+   if(!pid){toast("请选择产品规格",true);return false;}
+   if(n<=0){toast("数量需大于 0",true);return false;}
+   const p=DB.products.find(x=>x.productId==pid),cat=DB.categories.find(c=>c.categoryId===p.categoryId),wh=ov.querySelector("#ib-wh").value;
+   DB.inbound.unshift({inboundNo:genNo("RK"),specification:p.productSpecs,categoryName:cat.categoryName,num:n,warehouseName:wh,createName:"ytadmin",createTime:nowStr(),remark:ov.querySelector("#ib-remark").value.trim()});
+   let inv=DB.inventory.find(x=>x.specification===p.productSpecs);
+   if(inv)inv.stockQuantity+=n;
+   else DB.inventory.push({id:7000+DB.inventory.length+1,productId:p.productId,specification:p.productSpecs,categoryName:cat.categoryName,stockQuantity:n,warehouseName:wh,shelves:"—",inTime:nowStr().slice(0,10)});
+   toast(`入库成功，${p.productSpecs} × ${n} 已计入库存`);switchView("inbound");
+  }});
+}
+function ibLoadSpecs(){
+ const cat=$("ib-cat").value;const s=$("ib-spec");
+ const list=DB.products.filter(p=>p.categoryId===cat);
+ s.innerHTML=list.length?`<option value="">请选择规格</option>`+list.map(p=>`<option value="${p.productId}">${p.productSpecs}</option>`).join(""):'<option value="">该类型下暂无规格</option>';
+}
+function userFormDialog(row){
+ const isEdit=!!row;
+ dialog({title:isEdit?"修改用户":"新增用户",width:"540px",body:
+  field("用户名称",`<input class="ep-input" id="uf-name" value="${row?row.userName:""}" placeholder="登录账号" ${isEdit?"disabled":""} />`,1)+
+  field("用户昵称",`<input class="ep-input" id="uf-nick" value="${row?row.nickName:""}" />`,1)+
+  field("归属部门",`<select class="ep-input" id="uf-dept">${DB.depts.slice(1).map(d=>`<option ${row&&row.dept===d.deptName?"selected":""}>${d.deptName}</option>`).join("")}</select>`)+
+  field("手机号码",`<input class="ep-input" id="uf-phone" value="${row?row.phone:""}" />`,1)+
+  field("状态",`<select class="ep-input" id="uf-status"><option ${row&&row.status==="正常"?"selected":""}>正常</option><option ${row&&row.status==="停用"?"selected":""}>停用</option></select>`),
+  onOk:ov=>{
+   const name=val(ov.querySelector("#uf-name"),v=>!!v,"请输入用户名称");if(name===null)return false;
+   const phone=val(ov.querySelector("#uf-phone"),v=>/^1[3-9]\d{9}$/.test(v),"请输入正确的手机号码");if(phone===null)return false;
+   if(isEdit){Object.assign(row,{nickName:ov.querySelector("#uf-nick").value.trim(),dept:ov.querySelector("#uf-dept").value,phone,status:ov.querySelector("#uf-status").value});toast("修改成功");}
+   else{DB.users.push({userId:DB.users.length+1,userName:name,nickName:ov.querySelector("#uf-nick").value.trim()||name,dept:ov.querySelector("#uf-dept").value,phone,status:ov.querySelector("#uf-status").value,createTime:nowStr()});toast("新增成功");}
+   switchView("user");
+  }});
+}
+function roleFormDialog(row){
+ const isEdit=!!row;
+ dialog({title:isEdit?"修改角色":"新增角色",width:"480px",body:
+  field("角色名称",`<input class="ep-input" id="rf-name" value="${row?row.roleName:""}" />`,1)+
+  field("权限字符",`<input class="ep-input" id="rf-key" value="${row?row.roleKey:""}" placeholder="如 sales" />`,1)+
+  field("显示顺序",`<input class="ep-input" id="rf-sort" type="number" value="${row?row.sort:DB.roles.length+1}" />`)+
+  field("状态",`<select class="ep-input" id="rf-status"><option ${row&&row.status==="正常"?"selected":""}>正常</option><option ${row&&row.status==="停用"?"selected":""}>停用</option></select>`),
+  onOk:ov=>{
+   const name=val(ov.querySelector("#rf-name"),v=>!!v,"请输入角色名称");if(name===null)return false;
+   if(isEdit){Object.assign(row,{roleName:name,roleKey:ov.querySelector("#rf-key").value.trim(),sort:+ov.querySelector("#rf-sort").value||1,status:ov.querySelector("#rf-status").value});toast("修改成功");}
+   else{DB.roles.push({roleId:DB.roles.length+1,roleName:name,roleKey:ov.querySelector("#rf-key").value.trim()||"—",sort:+ov.querySelector("#rf-sort").value||1,status:ov.querySelector("#rf-status").value,createTime:nowStr().slice(0,10)});toast("新增成功");}
+   switchView("role");
+  }});
+}
+function deptFormDialog(row){
+ const isEdit=!!row;
+ dialog({title:isEdit?"修改部门":"新增部门",width:"460px",body:
+  field("上级部门",`<select class="ep-input" id="df-parent"><option>启源玻璃科技</option></select>`)+
+  field("部门名称",`<input class="ep-input" id="df-name" value="${row?row.deptName:""}" />`,1)+
+  field("负责人",`<input class="ep-input" id="df-leader" value="${row?row.leader:""}" />`)+
+  field("显示排序",`<input class="ep-input" id="df-sort" type="number" value="${row?row.sort:DB.depts.length}" />`),
+  onOk:ov=>{
+   const name=val(ov.querySelector("#df-name"),v=>!!v,"请输入部门名称");if(name===null)return false;
+   if(isEdit){Object.assign(row,{deptName:name,leader:ov.querySelector("#df-leader").value.trim(),sort:+ov.querySelector("#df-sort").value||1});toast("修改成功");}
+   else{DB.depts.push({deptId:DB.depts.length+1,deptName:name,leader:ov.querySelector("#df-leader").value.trim()||"—",sort:+ov.querySelector("#df-sort").value||1,status:"正常"});toast("新增成功");}
+   switchView("dept");
+  }});
+}
+function postFormDialog(row){
+ const isEdit=!!row;
+ dialog({title:isEdit?"修改岗位":"新增岗位",width:"460px",body:
+  field("岗位名称",`<input class="ep-input" id="pf-name" value="${row?row.postName:""}" />`,1)+
+  field("岗位编码",`<input class="ep-input" id="pf-code" value="${row?row.postCode:""}" placeholder="如 keeper" />`,1)+
+  field("显示顺序",`<input class="ep-input" id="pf-sort" type="number" value="${row?row.sort:DB.posts.length+1}" />`),
+  onOk:ov=>{
+   const name=val(ov.querySelector("#pf-name"),v=>!!v,"请输入岗位名称");if(name===null)return false;
+   if(isEdit){Object.assign(row,{postName:name,postCode:ov.querySelector("#pf-code").value.trim(),sort:+ov.querySelector("#pf-sort").value||1});toast("修改成功");}
+   else{DB.posts.push({postId:DB.posts.length+1,postName:name,postCode:ov.querySelector("#pf-code").value.trim()||"—",sort:+ov.querySelector("#pf-sort").value||1,status:"正常"});toast("新增成功");}
+   switchView("post");
+  }});
+}
+
+/* ========================= 路由与事件 ========================= */
+const PAGES={
+ summary:{g:"订单管理",t:"销售客户汇总单",render:renderSummary},
+ po:{g:"订单管理",t:"生产订单",render:renderPo},
+ slip:{g:"订单管理",t:"销售单",render:renderSlip},
+ nonstd:{g:"订单管理",t:"非标快速下单",render:renderNonStd,after:nsInit},
+ cat:{g:"产品管理",t:"产品类型",render:renderCat},
+ prod:{g:"产品管理",t:"产品规格",render:renderProd},
+ out:{g:"库存管理",t:"库存出库",render:renderOut},
+ wh:{g:"库存管理",t:"货位管理",render:renderWh},
+ stat:{g:"库存管理",t:"库存统计",render:renderStat},
+ inv:{g:"库存管理",t:"产品库存",render:renderInv},
+ count:{g:"库存管理",t:"盘点库存",render:renderCount},
+ inbound:{g:"库存管理",t:"备货入库",render:renderInbound},
+ cust:{g:"客户管理",t:"客户信息",render:renderCust},
+ user:{g:"系统管理",t:"用户管理",render:renderUser},
+ role:{g:"系统管理",t:"角色管理",render:renderRole},
+ menu:{g:"系统管理",t:"菜单管理",render:renderMenu},
+ dept:{g:"系统管理",t:"部门管理",render:renderDept},
+ post:{g:"系统管理",t:"岗位管理",render:renderPost}
+};
+function switchView(k){
+ cur=k;$("crumb").innerHTML=`首页 / ${PAGES[k].g} / <span class="text-[#303133] font-medium">${PAGES[k].t}</span>`;
+ document.querySelectorAll(".submenu-item").forEach(el=>el.classList.toggle("active",el.dataset.k===k));
+ $("main").innerHTML=PAGES[k].render();
+ if(PAGES[k].after)PAGES[k].after();
+ window.scrollTo(0,0);
+}
+const A={
+ render:()=>switchView(cur),
+ grp:t=>{const b=$("grp-"+t.dataset.g);b.style.display=b.style.display==="none"?"":"none";},
+ nav:t=>switchView(t.dataset.k),
+ /* 生产订单 */
+ "po-tab":t=>{P.po.tab=t.dataset.tab;switchView("po");},
+ "po-reset":()=>{P.po.q="";switchView("po");},
+ "po-add":addOrderDialog,
+ "po-export":()=>toast("原型演示：已生成导出文件（Excel）"),
+ "po-exp":t=>{const k=t.dataset.key;P.po.exp.has(k)?P.po.exp.delete(k):P.po.exp.add(k);switchView("po");},
+ "po-print":t=>toast(`已生成 ${t.dataset.no} 的打印单（原型演示）`),
+ "po-edit":t=>poEditDialog(t.dataset.id),
+ "po-urgent":t=>{const o=DB.orders.find(x=>x.id==t.dataset.id);o.urgent=o.urgent?0:1;toast(o.urgent?"已标记加急":"已取消加急");switchView("po");},
+ "po-del":t=>{const o=DB.orders.find(x=>x.id==t.dataset.id);confirmDlg(`是否确认删除订单项「${o.specification}」？`,()=>{DB.orders=DB.orders.filter(x=>x.id!=t.dataset.id);toast("删除成功");switchView("po");});},
+ /* 汇总/销售单 */
+ "cs-chip":t=>{P.cs.range=t.dataset.r;switchView("summary");},
+ "cs-reset":()=>{P.cs.q="";P.cs.range="本年";switchView("summary");},
+ "cs-exp":t=>{const k=t.dataset.key;P.cs.exp.has(k)?P.cs.exp.delete(k):P.cs.exp.add(k);switchView("summary");},
+ "sl-reset":()=>{P.sl.q="";switchView("slip");},
+ "sl-exp":t=>{const k=t.dataset.key;P.sl.exp.has(k)?P.sl.exp.delete(k):P.sl.exp.add(k);switchView("slip");},
+ /* 客户 */
+ "ca-add":()=>caFormDialog(null),
+ "ca-edit":t=>caFormDialog(DB.customers.find(c=>c.customerId==t.dataset.id)),
+ "ca-del":t=>{const c=DB.customers.find(x=>x.customerId==t.dataset.id);confirmDlg(`是否确认删除客户名称「${c.customerName}」？`,()=>{DB.customers=DB.customers.filter(x=>x.customerId!=t.dataset.id);toast("删除成功");switchView("cust");});},
+ "ca-reset":()=>{P.ca.q="";switchView("cust");},
+ /* 产品 */
+ "ct-add":()=>catFormDialog(null),
+ "ct-edit":t=>catFormDialog(DB.categories.find(c=>c.categoryId===t.dataset.id)),
+ "ct-del":t=>{const c=DB.categories.find(x=>x.categoryId===t.dataset.id);
+   if(DB.products.some(p=>p.categoryId===c.categoryId)){toast("该类型下存在产品规格，无法删除",true);return;}
+   confirmDlg(`是否确认删除产品类型「${c.categoryName}」？`,()=>{DB.categories=DB.categories.filter(x=>x.categoryId!==t.dataset.id);toast("删除成功");switchView("cat");});},
+ "pa-add":()=>paFormDialog(null),
+ "pa-edit":t=>paFormDialog(DB.products.find(p=>p.productId==t.dataset.id)),
+ "pa-del":t=>{const p=DB.products.find(x=>x.productId==t.dataset.id);confirmDlg(`是否确认删除产品规格「${p.productSpecs}」？`,()=>{DB.products=DB.products.filter(x=>x.productId!=t.dataset.id);toast("删除成功");switchView("prod");});},
+ "pa-import":()=>toast("原型演示：请选择 Excel 模板文件进行批量导入"),
+ /* 库存 */
+ "pi-adj":t=>piAdjDialog(+t.dataset.id),
+ "pi-del":t=>{const x=DB.inventory.find(v=>v.id==t.dataset.id);confirmDlg(`是否确认删除库存条目「${x.specification}」？`,()=>{DB.inventory=DB.inventory.filter(v=>v.id!=t.dataset.id);toast("删除成功");switchView("inv");});},
+ "out-go":t=>outDialog(+t.dataset.id),
+ "wh-add":()=>whFormDialog(null),
+ "wh-edit":t=>whFormDialog(DB.warehouses.find(w=>w.warehouseCode===t.dataset.code)),
+ "wh-del":t=>{const w=DB.warehouses.find(x=>x.warehouseCode===t.dataset.code);
+   if(DB.inventory.some(x=>x.warehouseName===w.warehouseName)){toast("该仓库下存在库存，无法删除",true);return;}
+   confirmDlg(`是否确认删除「${w.warehouseName}」？`,()=>{DB.warehouses=DB.warehouses.filter(x=>x.warehouseCode!==t.dataset.code);toast("删除成功");switchView("wh");});},
+ "cnt-do":t=>{const x=DB.inventory.find(v=>v.id==t.dataset.id);const el=$("cnt-"+x.id);const n=parseInt(el.value||"",10);
+   if(isNaN(n)||n<0){toast("请输入有效的实盘数量",true);el.classList.add("ferr");return;}
+   const diff=n-x.stockQuantity;toast(`盘点成功：${x.specification} 差异 ${diff>=0?"+":""}${diff} 件，已留痕`);el.classList.remove("ferr");el.disabled=true;t.outerHTML='<span class="tag ok">已盘点</span>';},
+ "in-add":inboundDialog,
+ /* 系统 */
+ "u-add":()=>userFormDialog(null),
+ "u-edit":t=>userFormDialog(DB.users.find(u=>u.userId==t.dataset.id)),
+ "u-del":t=>{const u=DB.users.find(x=>x.userId==t.dataset.id);
+   if(u.userName==="ytadmin"){toast("超级管理员不可删除",true);return;}
+   confirmDlg(`是否确认删除用户「${u.nickName}」？`,()=>{DB.users=DB.users.filter(x=>x.userId!=t.dataset.id);toast("删除成功");switchView("user");});},
+ "u-pwd":t=>{const u=DB.users.find(x=>x.userId==t.dataset.id);confirmDlg(`确认重置用户「${u.userName}」的密码为默认密码？`,()=>toast(`已重置 ${u.userName} 的密码（原型演示）`));},
+ "r-add":()=>roleFormDialog(null),
+ "r-edit":t=>roleFormDialog(DB.roles.find(r=>r.roleId==t.dataset.id)),
+ "r-del":t=>{const r=DB.roles.find(x=>x.roleId==t.dataset.id);
+   if(r.roleKey==="admin"){toast("超级管理员角色不可删除",true);return;}
+   confirmDlg(`是否确认删除角色「${r.roleName}」？`,()=>{DB.roles=DB.roles.filter(x=>x.roleId!=t.dataset.id);toast("删除成功");switchView("role");});},
+ "d-add":()=>deptFormDialog(null),
+ "d-edit":t=>deptFormDialog(DB.depts.find(d=>d.deptId==t.dataset.id)),
+ "d-del":t=>{const d=DB.depts.find(x=>x.deptId==t.dataset.id);
+   if(d.deptId===1){toast("根部门不可删除",true);return;}
+   confirmDlg(`是否确认删除部门「${d.deptName}」？`,()=>{DB.depts=DB.depts.filter(x=>x.deptId!=t.dataset.id);toast("删除成功");switchView("dept");});},
+ "p-add":()=>postFormDialog(null),
+ "p-edit":t=>postFormDialog(DB.posts.find(p=>p.postId==t.dataset.id)),
+ "p-del":t=>{const p=DB.posts.find(x=>x.postId==t.dataset.id);confirmDlg(`是否确认删除岗位「${p.postName}」？`,()=>{DB.posts=DB.posts.filter(x=>x.postId!=t.dataset.id);toast("删除成功");switchView("post");});}
+};
+document.addEventListener("click",e=>{
+ const t=e.target.closest("[data-act]");if(t&&A[t.dataset.act])A[t.dataset.act](t);
+ if(!e.target.closest("#nsCust")&&!e.target.closest("#nsCustList")){const d=$("nsCustList");if(d)d.classList.add("hidden");}
+});
+document.addEventListener("keydown",e=>{
+ if(e.key==="F2"){e.preventDefault();switchView("nonstd");const p=$("quickPanel");if(p){p.classList.remove("hotkey-flash");void p.offsetWidth;p.classList.add("hotkey-flash");}}
+ if(cur!=="nonstd")return;
+ if(e.altKey&&/^[1-4]$/.test(e.key)){e.preventDefault();nsApplyTpl(+e.key-1);}
+ if(e.ctrlKey&&e.key==="Enter"){e.preventDefault();nsCreate();}
+ else if(e.key==="Enter"&&document.activeElement.tagName==="INPUT"&&document.activeElement.id!=="nsCust"){e.preventDefault();nsAddItem();}
+});
+/* ========================= 初始化 ========================= */
+renderSidebar();
+switchView("nonstd");
+</script>
+</body>
+</html>
