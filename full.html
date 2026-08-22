@@ -259,7 +259,7 @@ let cur="nonstd";
 
 /* ========================= 侧边栏 ========================= */
 const MENU=[
- {g:"订单管理",icon:"fa-file-invoice",items:[["summary","销售客户汇总单"],["po","生产订单"],["slip","销售单"],["nonstd","非标快速下单","new"]]},
+ {g:"订单管理",icon:"fa-file-invoice",items:[["summary","销售客户汇总单"],["po","生产订单"],["slip","销售单"],["nonstd","非标快速下单","new"],["speed","极速拼录","new"]]},
  {g:"产品管理",icon:"fa-box",items:[["cat","产品类型"],["prod","产品规格"]]},
  {g:"库存管理",icon:"fa-warehouse",items:[["out","库存出库"],["wh","货位管理"],["stat","库存统计"],["inv","产品库存"],["count","盘点库存"],["inbound","备货入库"]]},
  {g:"客户管理",icon:"fa-users",items:[["cust","客户信息"]]},
@@ -965,12 +965,144 @@ function postFormDialog(row){
   }});
 }
 
+/* ========================= 极速拼录（一行一单，极简录入） ========================= */
+const PINYIN={"鲁西化工":"lxhg","外贸diamond":"wmdiamond","外贸NATIONAL":"wmnational","东方锅炉":"dfgl","青海丽豪":"qhlh","南玻节能":"nbjn","双良硅材料":"slgcl","新疆协鑫":"xjxx","内蒙中环":"nmzh","湖北宜化":"hbyh"};
+let spRows=[];
+function allTypeNames(){return DB.categories.map(c=>c.categoryName).concat(NS_CUSTOM);}
+/* 类型首字/前缀自动补全：高→高硼硅玻璃 */
+function resolveTypeTok(tok){
+ const t=(tok||"").trim();if(!t)return {ok:false,msg:"缺少类型"};
+ const all=allTypeNames();
+ if(all.includes(t))return {ok:true,name:t};
+ const ch=t.charAt(0).toLowerCase();
+ let cands=all.filter(n=>n.charAt(0).toLowerCase()===ch);
+ if(!cands.length&&t.length>1)cands=all.filter(n=>n.startsWith(t));
+ if(cands.length===1)return {ok:true,name:cands[0],short:t};
+ if(cands.length>1)return {ok:true,name:cands[0],short:t,amb:cands};
+ return {ok:false,msg:"无法匹配类型「"+t+"」"};
+}
+/* 客户：精确→前缀→包含→拼音首字母，未命中则按新客户自动建档 */
+function resolveCustTok(tok){
+ const t=(tok||"").trim();if(!t)return {ok:false,msg:"缺少客户"};
+ const all=DB.customers;
+ let hit=all.find(c=>c.customerName===t)||all.find(c=>c.customerName.startsWith(t))||all.find(c=>c.customerName.includes(t));
+ if(!hit)hit=all.find(c=>(PINYIN[c.customerName]||"").startsWith(t.toLowerCase()));
+ if(hit)return {ok:true,name:hit.customerName,isNew:false};
+ return {ok:true,name:t,isNew:true};
+}
+/* 单行解析：方案A 客户-类型首字-尺寸/数量/单价 备注；方案B 空格自然语序 */
+function parseSpeedLine(line){
+ const raw=line.trim();if(!raw)return null;
+ const r={raw,remark:"",errors:[]};
+ let main=raw;
+ const sp=raw.indexOf(" ");
+ if(sp>-1){main=raw.slice(0,sp);r.remark=raw.slice(sp).trim();}
+ if(main.split("-").length>=3){
+  r.mode="方案A·拼接";
+  const dash=main.split("-");
+  r.cust=resolveCustTok(dash[0]);
+  r.type=resolveTypeTok(dash[1]);
+  const parts=dash.slice(2).join("-").split("/");
+  r.size=(parts[0]||"").trim();
+  const q=parseInt(parts[1],10);r.qty=isNaN(q)?null:q;
+  const p=parseFloat(parts[2]);r.price=isNaN(p)?null:p;
+ }else{
+  r.mode="方案B·自然语序";
+  r.remark="";
+  const toks=raw.split(/\s+/);
+  const sizeTok=toks.find(t=>/^[\d.]+([*xX×][\d.]+)+/.test(t));
+  const numToks=toks.filter(t=>t!==sizeTok&&/^[\d.]+[个件片块支条只元]?$/.test(t));
+  r.size=sizeTok||"";r.qty=null;r.price=null;
+  numToks.forEach(t=>{
+   if(/元$/.test(t)){if(r.price==null)r.price=parseFloat(t);}
+   else if(r.qty==null){r.qty=parseFloat(t);}
+   else if(r.price==null){r.price=parseFloat(t);}
+  });
+  const textToks=toks.filter(t=>t!==sizeTok&&!numToks.includes(t));
+  r.cust=resolveCustTok(textToks[0]||"");
+  r.type=resolveTypeTok(textToks[1]||"");
+  if(textToks.length>2)r.remark=(r.remark?r.remark+" ":"")+textToks.slice(2).join(" ");
+ }
+ if(!r.cust.ok)r.errors.push(r.cust.msg);
+ if(!r.type.ok)r.errors.push(r.type.msg);
+ if(!r.size)r.errors.push("缺少尺寸");
+ if(!r.qty||r.qty<=0)r.errors.push("数量缺失或无效");
+ return r;
+}
+function spEmpty(){return '<div class="text-[12px] text-[#b1b3b8] text-center py-6"><i class="fa-solid fa-keyboard text-[22px] block mb-2 opacity-60"></i>在上方录入，解析结果实时显示在这里</div>';}
+function spParseAll(){
+ const lines=($("spInput").value||"").split("\n");
+ spRows=lines.map(parseSpeedLine);
+ const box=$("spPreview"),rows=spRows.filter(Boolean);
+ if(!rows.length){box.innerHTML=spEmpty();$("spStat").textContent="";return;}
+ let ok=0,err=0;
+ const trs=rows.map((r,i)=>{
+  const bad=r.errors.length;bad?err++:ok++;
+  const custCell=r.cust.ok?(r.cust.name+(r.cust.isNew?' <span class="tag std" style="margin-left:4px;">新客·自动建档</span>':"")):'<span class="text-[#f56c6c]">'+r.cust.msg+"</span>";
+  const typeCell=r.type.ok?(r.type.name+(r.type.amb?' <span class="tag warn" style="margin-left:4px;">歧义·取首项</span>':"")):'<span class="text-[#f56c6c]">'+r.type.msg+"</span>";
+  const status=bad?'<span class="tag" style="background:#fef0f0;color:#f56c6c;border:1px solid #fab6b6;">'+r.errors.join("、")+"</span>":'<span class="tag ok">可下单</span>';
+  return `<tr${bad?' style="background:#fef8f8;"':""}><td>${i+1}</td><td>${custCell}</td><td>${typeCell}</td><td><b style="color:#303133">${r.size||"—"}</b></td><td>${r.qty||"—"}</td><td>${r.price!=null?"¥"+r.price:'<span class="text-[#b1b3b8]">后补</span>'}</td><td>${r.remark||"—"}</td><td>${status}</td><td style="color:#c0c4cc;font-size:11px;">${r.mode}</td></tr>`;
+ }).join("");
+ box.innerHTML=table(["#","客户","产品类型","尺寸","数量","单价","备注","状态","方案"],trs,"920px");
+ $("spStat").innerHTML=`共 ${rows.length} 行 · <span style="color:#67c23a">可提交 ${ok}</span>${err?` · <span style="color:#f56c6c">待修正 ${err}</span>`:""}`;
+}
+function spFill(txt){$("spInput").value=txt;spParseAll();$("spInput").focus();}
+function spSubmit(){
+ const rows=spRows.filter(r=>r&&!r.errors.length);
+ if(!rows.length){toast("没有可提交的行，请先修正红色错误行",true);return;}
+ const byC={};rows.forEach(r=>{(byC[r.cust.name]=byC[r.cust.name]||[]).push(r);});
+ let newCusts=0;
+ Object.keys(byC).forEach(cn=>{
+  let c=DB.customers.find(x=>x.customerName===cn);
+  if(!c){c={customerId:1000+DB.customers.length+1,customerCode:"C2024"+String(DB.customers.length+11).padStart(3,"0"),customerName:cn,contactPerson:"—",phone:"",address:"",accountStatus:"正常",createTime:nowStr()};DB.customers.unshift(c);newCusts++;}
+  const no=genNo("FS");
+  byC[cn].forEach(r=>{DB.orders.unshift({id:Date.now()+Math.random(),productionNo:no,customerId:c.customerId,customerName:cn,categoryId:"",categoryName:r.type.name,specification:r.size,num:r.qty,price:r.price!=null?r.price.toFixed(2):"0.00",finishNum:0,urgent:0,remark:r.remark||"",remark1:"",createName:"ytadmin",createTime:nowStr(),ns:1});});
+ });
+ toast(`提交成功：${rows.length} 个订单项 / ${Object.keys(byC).length} 张订单${newCusts?`，自动建档新客户 ${newCusts} 个`:""}，已同步至「生产订单」`);
+ $("spInput").value="";spParseAll();
+}
+function renderSpeed(){
+ return `
+ <div class="bg-white rounded-md border border-slate-200 px-4 py-3 mb-3.5">
+  <div class="flex flex-wrap items-center gap-2 mb-1.5">
+   <span class="text-[14px] font-semibold text-[#303133]"><i class="fa-solid fa-bolt text-[#ff7d1c] mr-1.5"></i>一行一单 · 极速拼录</span>
+   <span class="tag ns">极简录入</span>
+   <span class="text-[11.5px] text-[#b1b3b8] ml-auto hidden md:inline">一行 = 一个订单项，支持整段粘贴批量录单；同一客户多行自动合并为一张订单</span>
+  </div>
+  <div class="text-[12.5px] text-[#606266] leading-relaxed">
+   <b>方案A · 标准拼接</b>：<code style="background:#f5f7fa;border:1px solid #e4e7ed;border-radius:4px;padding:1px 6px;font-size:11.5px;">客户-类型首字-长*宽*厚/数量/单价 备注</code>&nbsp;
+   例：<b style="color:#ff7d1c">张三-高-100*100*100/20/15.3 发义乌做木箱</b><br>
+   <b>方案B · 自然语序</b>（空格分隔、无需记符号、顺序随意）：例：<b style="color:#ff7d1c">鲁西 高硼硅 258*50*17 20个 160元</b><br>
+   <span class="text-[#909399] text-[11.5px]">类型只打首字自动补全（高→高硼硅玻璃、4→4.0玻璃、K→K9玻璃）；单价与备注可省略；客户未收录时自动按新客建档。</span>
+  </div>
+ </div>
+ <div class="bg-white rounded-md border border-slate-200 p-4">
+  <div class="flex flex-wrap items-center gap-2 mb-2">
+   <span class="text-[13px] font-semibold text-[#303133]">录入区</span>
+   <span class="chip !py-[3px] text-[11px]" onclick="spFill('张三-高-100*100*100/20/15.3 发义乌做木箱')">填入单行示例</span>
+   <span class="chip !py-[3px] text-[11px]" onclick="spFill('鲁西化工-条-三线165*30*17/150/13.5 发义乌做木箱\\n外贸diamond-高-258*50*17/25\\n东方锅炉-异-R80异形开孔/8/310 出口件需倒角\\n南玻节能 4.0玻璃 200*60 40个')">填入多行批量示例</span>
+   <span class="chip !py-[3px] text-[11px]" onclick="spFill('鲁西 高硼硅 258*50*17 20个 160元')">填入自然语序示例</span>
+  </div>
+  <textarea id="spInput" rows="5" class="ep-input !text-[13.5px] !leading-6" style="font-family:Consolas,'Courier New',monospace;" placeholder="张三-高-100*100*100/20/15.3 发义乌做木箱&#10;鲁西化工-条-三线165*30*17/150&#10;鲁西 高硼硅 258*50*17 20个 160元" oninput="spParseAll()" onkeydown="if(event.ctrlKey&&event.key==='Enter'){event.preventDefault();spSubmit();}"></textarea>
+  <div class="mt-3 flex flex-wrap items-center gap-2">
+   <button class="ep-btn ns" onclick="spSubmit()"><i class="fa-solid fa-file-circle-check"></i>提交生成订单 <span class="kb ml-1 !bg-white/20 !border-white/40 !text-white">Ctrl+Enter</span></button>
+   <button class="ep-btn" onclick="$('spInput').value='';spParseAll()"><i class="fa-solid fa-eraser"></i>清空</button>
+   <span class="ml-auto text-[12.5px] text-[#606266]" id="spStat"></span>
+  </div>
+ </div>
+ <div class="bg-white rounded-md border border-slate-200 mt-3.5 p-4">
+  <div class="flex items-center justify-between mb-2"><span class="text-[13px] font-semibold text-[#303133]"><i class="fa-solid fa-table-list text-[#409eff] mr-1.5"></i>实时解析预览</span><span class="text-[11px] text-[#b1b3b8]">边输入边解析，红色行修正后才可提交；提交后可到「生产订单」查看（带非标标记）</span></div>
+  <div id="spPreview">${spEmpty()}</div>
+ </div>`;
+}
+
 /* ========================= 路由与事件 ========================= */
 const PAGES={
  summary:{g:"订单管理",t:"销售客户汇总单",render:renderSummary},
  po:{g:"订单管理",t:"生产订单",render:renderPo},
  slip:{g:"订单管理",t:"销售单",render:renderSlip},
  nonstd:{g:"订单管理",t:"非标快速下单",render:renderNonStd,after:nsInit},
+ speed:{g:"订单管理",t:"极速拼录",render:renderSpeed},
  cat:{g:"产品管理",t:"产品类型",render:renderCat},
  prod:{g:"产品管理",t:"产品规格",render:renderProd},
  out:{g:"库存管理",t:"库存出库",render:renderOut},
